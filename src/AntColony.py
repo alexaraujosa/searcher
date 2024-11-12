@@ -1,15 +1,23 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+import random
 
-
-def distance(point1, point2):
+def heuristic(point1, point2):
     return np.sqrt(np.sum((point1 - point2) ** 2))
 
+def probabilidade(neighbours, k_ant, currentCity, pheromone, alpha, beta):
+    # Os vertices a serem visitados são os adjacentes? ou todos
+    probabilities = []
+    for i, neighbour in neighbours:
+        h = heuristic(currentCity, neighbour)
+        probabilities[i] = (pheromone[currentCity][neighbour] ** alpha) * (h ** beta)
+    probabilities /= np.sum(probabilities)
+    # Esta função escolhe um valor de neighbours em função da probabilidade de cada um, ou seja em função de p
+    next_point = np.random.choice(neighbours, p=probabilities)
+    return next_point
 
-def ant_colony_optimization(points, n_ants, n_iterations, alpha, beta, evaporation_rate, Q):
-    n_points = len(points)
-    pheromone = np. ones((n_points, n_points))
+def ant_colony_optimization(cities, n_ants, n_iterations, alpha, beta, evaporation_rate, Q):
+    n_cities = len(cities)
+    pheromone = np.ones((n_cities, n_cities))
     best_path = None
     best_path_length = np.inf
 
@@ -18,8 +26,8 @@ def ant_colony_optimization(points, n_ants, n_iterations, alpha, beta, evaporati
         path_lengths = []
 
         for ant in range(n_ants):
-            visited = [False] * n_points
-            current_point = np.random.randint(n_points)
+            visited = [False] * n_cities
+            current_point = np.random.randint(n_cities)
             visited[current_point] = True
             path = [current_point]
             path_length = 0
@@ -29,14 +37,16 @@ def ant_colony_optimization(points, n_ants, n_iterations, alpha, beta, evaporati
                 probabilities = np.zeros(len(unvisited))
 
                 for i, unvisited_point in enumerate(unvisited):
-                    probabilities[i] = pheromone[current_point, unvisited_point] ** alpha / distance(
-                        points[current_point], points[unvisited_point]) ** beta
+                    # Neste algoritmo ele divide o valor das feromonas com a distancia... isto está bem?
+                    # As cidades que devemos ter em conta para o total sao as adjacentes? ou todas?
+                    probabilities[i] = pheromone[current_point, unvisited_point] ** alpha / heuristic(
+                        cities[current_point], cities[unvisited_point]) ** beta
 
                 probabilities /= np.sum(probabilities)
 
                 next_point = np.random.choice(unvisited, p=probabilities)
                 path.append(next_point)
-                path_length += distance(points[current_point], points[next_point])
+                path_length += heuristic(cities[current_point], cities[next_point])
                 visited[next_point] = True
                 current_point = next_point
 
@@ -50,7 +60,7 @@ def ant_colony_optimization(points, n_ants, n_iterations, alpha, beta, evaporati
         pheromone *= evaporation_rate
 
         for path, path_length in zip(paths, path_lengths):
-            for i in range(n_points - 1):
+            for i in range(n_cities - 1):
                 pheromone[path[i], path[i + 1]] += Q / path_length
             pheromone[path[-1], path[0]] += Q / path_length
 
