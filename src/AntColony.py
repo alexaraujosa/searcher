@@ -54,27 +54,6 @@ def ant_colony_optimization(points, n_ants, n_iterations, alpha, beta, evaporati
                 pheromone[path[i], path[i + 1]] += Q / path_length
             pheromone[path[-1], path[0]] += Q / path_length
 
-    fig = plt.figure(figsize=(8, 6))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(points[:, 0], points[:, 1], points[:, 2], c='r', marker='o')
-
-    for i in range(n_points - 1):
-        ax.plot([points[best_path[i], 0], points[best_path[i + 1], 0]],
-                [points[best_path[i], 1], points[best_path[i + 1], 1]],
-                [points[best_path[i], 2], points[best_path[i + 1], 2]],
-                c='g', linestyle='-', linewidth=2, marker='o')
-
-    ax.plot([points[best_path[0], 0], points[best_path[-1], 0]],
-            [points[best_path[0], 1], points[best_path[-1], 1]],
-            [points[best_path[0], 2], points[best_path[-1], 2]],
-            c='g', linestyle='-', linewidth=2, marker='o')
-
-    ax.set_xlabel('X Label')
-    ax.set_ylabel('Y Label')
-    ax.set_zlabel('Z Label')
-    plt.show()
-
-
 # Example usage:
 points = np.random.rand(10, 3)  # Generate 10 random 3D points
 ant_colony_optimization(points, n_ants=10, n_iterations=100, alpha=1, beta=1, evaporation_rate=0.5, Q=1)
