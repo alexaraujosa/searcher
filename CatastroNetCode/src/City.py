@@ -11,19 +11,19 @@ class City:
 
     def __str__(self):
         # Método para mostrar uma representação textual da cidade
-        return f"Name-> {self.m_name} || Population-> {self.m_population}"
+        return f"Name-> {self.name} || Population-> {self.population}"
 
     def get_coordinates(self):
         # Retorna as coordenadas geográficas (longitude, latitude)
-        return self.m_longitude, self.m_latitude
+        return self.longitude, self.latitude
 
     def update_population(self, new_population):
         # Atualiza a população da cidade
-        self.m_population = int(new_population)
+        self.population = int(new_population)
 
     def is_critical(self, threshold):
         # Verifica se a cidade tem uma população maior que o limite
-        return self.m_population > threshold
+        return self.population > threshold
 
     def distance_to(self, other_city):
         # Raio da Terra em km

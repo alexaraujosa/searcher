@@ -1,19 +1,19 @@
-################################################################################
-#     procura DFS
-####################################################################################
+from src.Graph import Graph
 
-def procura_DFS(self, start, end, path=[], visited=set()):
+def procuraDFS(graph, vehicles, start, end, path=[], visited=set()):
+    peopleInNeed = graph.getCity(end).population
+
     path.append(start)
     visited.add(start)
 
     if start == end:
         # calcular o custo do caminho funçao calcula custo.
-        custoT = self.calcula_custo(path)
-        return (path, custoT)
-    for (adjacente, peso) in self.m_graph[start]:
-        if adjacente not in visited:
-            resultado = self.procura_DFS(adjacente, end, path, visited)
+        custoT = graph.pathCost(path, vehicles, peopleInNeed)
+        return path, custoT
+    for (neighbour, road) in graph.getNeighborsRoadPair(start):
+        if neighbour not in visited:
+            resultado = procuraDFS(graph, vehicles, neighbour, end, path, visited)
             if resultado is not None:
                 return resultado
-    path.pop()  # se nao encontra remover o que está no caminho
+    path.pop()
     return None

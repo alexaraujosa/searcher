@@ -1,15 +1,11 @@
 import osm.PortugalCompleto
 from src.Graph import Graph
+from src.UI.AppUI import *
 
+graph_data_csv = '../data/graph_data.csv'
 
 def main():
-    #Comentar no caso de não se querer gerar nova informação. (Em principio não será mais necessário)
-    #osm.PortugalCompleto.run()
-
-    #Aparentemente a função load corre logo que o objeto é criado
-    grafo = Graph()
-
-    print("LETS GO")
+    AppUI().run()
 
 if __name__ == "__main__":
     main()
