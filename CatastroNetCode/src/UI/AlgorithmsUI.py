@@ -1,4 +1,5 @@
 from src.algorithms.Dfs import procuraDFS
+from src.algorithms.Bfs import procuraBFS
 
 class AlgorithmsUI:
     def __init__(self, graph, vehicles):
@@ -17,10 +18,15 @@ class AlgorithmsUI:
         print("7. Exit")
 
     def dfs(self):
-        procuraDFS(self.graph, self.vehicles, 'Barcelos', 'Ponte de Lima')
+        city1_name = input("Which city do you want to start from?: ").strip()
+        city2_name = input("Which city do you want to go to?").strip()
+        procuraDFS(self.graph, self.vehicles, city1_name, city2_name)
         return
 
     def bfs(self):
+        city1_name = input("Which city do you want to start from?: ").strip()
+        city2_name = input("Which city do you want to go to?").strip()
+        procuraBFS(self.graph, self.vehicles, city1_name, city2_name)
         return
 
     def uniformCost(self):

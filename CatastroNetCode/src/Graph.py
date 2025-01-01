@@ -2,6 +2,8 @@
 import csv
 import os
 
+from shapely.measurement import distance
+
 from Road import *
 import math
 from queue import Queue
@@ -208,18 +210,24 @@ class Graph:
     #######################
     #    devolver o custo de uma aresta
     ##############
-    def getRoadCost(self, vehicle, city1, city2):
-        road = self.getRoadBetween(city1, city2)
+    def getRoadCost(self, vehicle, city1_name, city2_name):
+        road = self.getRoadBetween(city1_name, city2_name)
+        distance = road.distance
 
         if road.roadCondition == RoadConditions.DESTROYED:
             return float('inf')
 
         if road is None:
-            print(f"No road found between {city1} and {city2}.")
+            print(f"No road found between {city1_name} and {city2_name}.")
+
+        if vehicle.name == 'Helicopter':
+            print(f"Old distance is {distance}")
+            distance = self.getCity(city1_name).distance_to(self.getCity(city2_name))
+            print(f"New distance is {distance}")
 
         vehiclePenalty = vehicle.getVehiclePenalty(road.roadCondition)
-        travelTime = vehicle.getTravelTime(road.distance)
-        fuelNeeded = vehicle.getFuelNeeded(road.distance)
+        travelTime = vehicle.getTravelTime(distance)
+        fuelNeeded = vehicle.getFuelNeeded(distance)
 
         return vehiclePenalty * (travelTime + fuelNeeded)
 
@@ -239,7 +247,7 @@ class Graph:
                 custo = custo + self.getRoadCost(vehicle, teste[i], teste[i + 1])
                 # print(teste[i])
                 i = i + 1
-            vehicleCost[vehicle.name] = (peopleInNeed * custo)/vehicle.maxPeopleHelped
+            vehicleCost[vehicle.name] = round(custo * (1+(peopleInNeed/vehicle.maxPeopleHelped)))
 
         print(path)
         print(vehicleCost)
