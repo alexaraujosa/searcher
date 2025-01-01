@@ -1,6 +1,7 @@
 # Classe grafo para representaçao de grafos,
 import csv
 import os
+import random
 
 from shapely.measurement import distance
 
@@ -74,9 +75,6 @@ class Graph:
 
         print(f"\033[32mGrafo carregado com {len(self.nodes)} nós e {sum(len(v) for v in self.graph.values()) // 2} arestas.\033[0m")
 
-        #self.changeRoadCondition('Vila Nova de Cerveira', 'Ponte de Lima', RoadConditions.STORM)
-        #self.changeRoadCondition('Ponte de Lima', 'Barcelos', RoadConditions.DESTROYED)
-
     def getNeighbors(self, city_name):
         neighbors = []
 
@@ -94,7 +92,10 @@ class Graph:
         return False
 
     def getCity(self, city_name):
-        return self.nodes[city_name]
+        if city_name in self.nodes:
+            return self.nodes[city_name]
+        else:
+            return None
 
     def getRoadBetween(self, city1_name, city2_name):
         road = None
@@ -106,12 +107,33 @@ class Graph:
 
         return road
 
+    def randomizeRoadConditions(self, cities_to_randomize=None, change_probability=0.3):
+        """
+        Randomiza as condições das estradas, mas apenas para algumas cidades selecionadas.
 
-    #######################################################
-    #    Remover uma aresta em função de uma alteração    #
-    #######################################################
+        :param cities_to_randomize: Lista de cidades para as quais as estradas serão randomizadas.
+                                    Se None, escolhe aleatoriamente algumas cidades.
+        :param change_probability: Probabilidade de uma estrada entre duas cidades ter sua condição alterada.
+        """
+        # Se não foi especificada uma lista de cidades, escolhemos aleatoriamente algumas cidades do grafo
+        if not cities_to_randomize:
+            cities_to_randomize = random.sample(list(self.nodes.keys()), k=int(len(self.nodes) * 0.3))# Randomiza 30% das cidades
+
+        # Iterar por todas as cidades que queremos randomizar
+        for city_name in cities_to_randomize:
+            for neighbor_name, road in self.graph[city_name]:
+                # Com base na probabilidade, decidimos se alteramos a condição da estrada
+                if random.random() < change_probability:
+                    # Randomiza a condição da estrada
+                    new_condition = random.choice(list(RoadConditions))
+                    self.changeRoadCondition(city_name, neighbor_name, new_condition)
+                    print(f"Road condition between {city_name} and {neighbor_name} changed to {new_condition}.")
+
     def changeRoadCondition(self, city1_name, city2_name, roadCondition):
-        for (neighbor,road) in self.graph[city1_name]:
+        """
+        Altera a condição de uma estrada entre duas cidades.
+        """
+        for (neighbor, road) in self.graph[city1_name]:
             if neighbor == city2_name:
                 road.updateRoadCondition(roadCondition)
                 print(f"Weather condition between {city1_name} and {city2_name} changed to {roadCondition}.")
@@ -195,6 +217,65 @@ class Graph:
         plt.show()
         print(f"Graph with dots only saved to {dots_filename}")
 
+    def saveRouteAsPNG(self, path, end_list):
+        """
+        Save an image of the graph with the path found by DFS highlighted in green,
+        and cities in end_list highlighted in red.
+
+        :param path: The path list from DFS that contains the cities in order.
+        :param end_list: List of cities that need to be visited and should be colored red.
+        """
+        # Get the number of files in the images folder
+        nFiles = int(len(os.listdir('../routes/')))
+
+        # Define filenames
+        route_filename = f"../routes/route{nFiles}.png"
+
+        # Create a NetworkX graph object
+        G = nx.Graph()
+
+        # Add nodes to the NetworkX graph
+        for city_name, city in self.nodes.items():
+            G.add_node(city_name, pos=(city.longitude, city.latitude))
+
+        # Add edges to the NetworkX graph
+        for city_name, neighbors in self.graph.items():
+            for neighbor_name, road in neighbors:
+                G.add_edge(city_name, neighbor_name, weight=road.distance)
+
+        # Extract node positions
+        pos = nx.get_node_attributes(G, 'pos')
+
+        # Create a subgraph with only the nodes and edges in the path
+        path_edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
+        subgraph = G.subgraph(path)  # Create a subgraph with the path nodes
+
+        # Prepare edge colors: everything is black by default
+        edge_colors = ['black' for _ in subgraph.edges()]
+
+        # Highlight the path edges by turning those edges green
+        for i, (u, v) in enumerate(subgraph.edges()):
+            if (u, v) in path_edges or (v, u) in path_edges:
+                edge_colors[i] = 'green'  # Set the color to green for the path
+
+        # Prepare node colors: skyblue by default
+        node_colors = ['skyblue' for _ in subgraph.nodes()]
+
+        # Highlight nodes in end_list by turning those nodes red
+        for i, node in enumerate(subgraph.nodes()):
+            if node in end_list:
+                node_colors[i] = 'red'  # Set the color to red for nodes in end_list
+
+        # First plot: Full graph with node labels, black edges, and green path
+        plt.figure(figsize=(20, 20))  # Scale figure size for clarity
+        nx.draw(subgraph, pos, with_labels=True, node_size=40, font_size=8, node_color=node_colors, font_color='black',
+                edge_color=edge_colors)
+
+        plt.title("DFS Path Highlighted in Green with Cities to Visit in Red")
+        plt.savefig(route_filename, dpi=200)
+        plt.show()
+        print(f"Graph with highlighted DFS path and cities to visit saved to {route_filename}")
+
     ##############################3
     #   imprimir arestas
     ############################333333
@@ -221,9 +302,7 @@ class Graph:
             print(f"No road found between {city1_name} and {city2_name}.")
 
         if vehicle.name == 'Helicopter':
-            print(f"Old distance is {distance}")
             distance = self.getCity(city1_name).distance_to(self.getCity(city2_name))
-            print(f"New distance is {distance}")
 
         vehiclePenalty = vehicle.getVehiclePenalty(road.roadCondition)
         travelTime = vehicle.getTravelTime(distance)
@@ -236,23 +315,33 @@ class Graph:
     ##############################
     #  dado um caminho calcula o seu custo
     ###############################
-    def pathCost(self, path, vehicleList, peopleInNeed):
+    def pathCost(self, path, end_list, vehicleList, peopleInNeed):
         vehicleCost = {}
 
         for vehicle in vehicleList:
-            teste = path
             custo = 0
             i = 0
-            while i + 1 < len(teste):
-                custo = custo + self.getRoadCost(vehicle, teste[i], teste[i + 1])
-                # print(teste[i])
-                i = i + 1
-            vehicleCost[vehicle.name] = round(custo * (1+(peopleInNeed/vehicle.maxPeopleHelped)))
 
-        print(path)
-        print(vehicleCost)
+            match vehicle.name:
+                case 'Helicopter' | 'Drone':
+                    lastLocation = path[0]
+                    while i < len(path):
+                        if path[i] in end_list:
+                            custo += self.getRoadCost(vehicle, lastLocation, path[i])
+                            lastLocation = path[i]
+                        i += 1
+                case 'Truck' | 'Boat':
+                    while i + 1 < len(path):
+                        custo += self.getRoadCost(vehicle, path[i], path[i + 1])
+                        i += 1
+                case _:
+                    print(f"Unknown vehicle type: {vehicle.name}")
+                    continue
 
-        #return vehicleCost
+#vehicleCost[vehicle.name] = round(custo * (1 + (peopleInNeed / vehicle.maxPeopleHelped)))
+            vehicleCost[vehicle.name] = custo#round(custo * (1 + (peopleInNeed / vehicle.maxPeopleHelped)))
+
+        return vehicleCost
 
     ########################################
     # função que devolve vizinhos de um nó

@@ -7,10 +7,10 @@ class GraphUI:
 
     def displayMenu(self):
         print("\n=== Graph Manager ===")
-        print("1. Print graph")
-        print("2. Export current graph as png")
-        print("3. Load graph")
-        print("4. ...")
+        print("1. Print Graph")
+        print("2. Export Current Graph as png")
+        print("3. Load Graph From .csv File")
+        print("4. Randomize Road Conditions")
         print("5. Exit")
 
     def displayGraph(self):
@@ -28,6 +28,9 @@ class GraphUI:
             self.graph.load(filename)
         return
 
+    def randomizeRoadConditions(self):
+        self.graph.randomizeRoadConditions()
+
     def run(self):
         while self.running:
             self.displayMenu()
@@ -41,6 +44,8 @@ class GraphUI:
                 graphFile = input("Write a path:<data/graph_data.cvs> or <default>: ").strip()
                 self.loadGraph(graphFile)
             elif choice == "4":
+                self.randomizeRoadConditions()
+            elif choice == "5":
                 print("Exiting Graph Manager. Goodbye!")
                 break
             else:

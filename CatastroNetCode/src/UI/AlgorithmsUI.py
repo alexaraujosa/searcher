@@ -1,5 +1,7 @@
-from src.algorithms.Dfs import procuraDFS
-from src.algorithms.Bfs import procuraBFS
+from src.algorithms.Dfs import depthFirstSearch
+from src.algorithms.Bfs import breadthFirstSearch
+from src.algorithms.UniformCost import uniformCost
+
 
 class AlgorithmsUI:
     def __init__(self, graph, vehicles):
@@ -18,18 +20,76 @@ class AlgorithmsUI:
         print("7. Exit")
 
     def dfs(self):
+        """
+        Function to start DFS traversal, taking input from the user for the cities.
+        The user provides the starting city and the target cities to visit.
+        """
         city1_name = input("Which city do you want to start from?: ").strip()
-        city2_name = input("Which city do you want to go to?").strip()
-        procuraDFS(self.graph, self.vehicles, city1_name, city2_name)
+        if self.graph.getCity(city1_name) is None:
+            print("Invalid city name.")
+            return
+        city2_names = input("Which cities do you want to assist? (Provide as a list, separated by commas): ").strip()
+
+        end_list = [city.strip() for city in city2_names.split(',')]
+
+        for city in end_list:
+            if self.graph.getCity(city) is None:
+                print("Invalid city name.")
+                return
+
+        (path, totalCostByVehicle) = depthFirstSearch(self.graph, self.vehicles, city1_name, end_list)
+
+        self.graph.saveRouteAsPNG(path, end_list)
+        print("\n=== Path Costs ===")
+        print(path)
+        print(totalCostByVehicle)
         return
 
     def bfs(self):
         city1_name = input("Which city do you want to start from?: ").strip()
-        city2_name = input("Which city do you want to go to?").strip()
-        procuraBFS(self.graph, self.vehicles, city1_name, city2_name)
+        if self.graph.getCity(city1_name) is None:
+            print("Invalid city name.")
+            return
+        city2_names = input("Which cities do you want to assist? (Provide as a list, separated by commas): ").strip()
+
+        end_list = [city.strip() for city in city2_names.split(',')]
+
+        for city in end_list:
+            if self.graph.getCity(city) is None:
+                print("Invalid city name.")
+                return
+
+        (path, totalCostByVehicle) = breadthFirstSearch(self.graph, self.vehicles, city1_name, end_list)
+        self.graph.saveRouteAsPNG(path, end_list)
+        print("\n=== Path Costs ===")
+        print(path)
+        print(totalCostByVehicle)
+
         return
 
     def uniformCost(self):
+        city1_name = input("Which city do you want to start from?: ").strip()
+        if self.graph.getCity(city1_name) is None:
+            print("Invalid city name.")
+            return
+        city2_names = input("Which cities do you want to assist? (Provide as a list, separated by commas): ").strip()
+
+        end_list = [city.strip() for city in city2_names.split(',')]
+
+        for city in end_list:
+            if self.graph.getCity(city) is None:
+                print("Invalid city name.")
+                return
+
+
+        paths = uniformCost(self.graph, self.vehicles, city1_name, end_list)
+
+        #TODO Neste path vai ter de vir um dic com cada veiculo e cada veiculo com um caminho, e um custo associado a cada caminho
+        #Assim temos a solução para cada um deles
+        #self.graph.saveRouteAsPNG(path, end_list)
+        #print("\n=== Path Costs ===")
+        #print(path)
+        #print(totalCostByVehicle)
         return
 
     def greddy(self):
