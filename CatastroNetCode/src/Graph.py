@@ -107,7 +107,7 @@ class Graph:
 
         return road
 
-    def randomizeRoadConditions(self, cities_to_randomize=None, change_probability=0.3):
+    def randomizeRoadConditions(self, cities_to_randomize=None, change_probability=0.2):
         """
         Randomiza as condições das estradas, mas apenas para algumas cidades selecionadas.
 
@@ -127,7 +127,7 @@ class Graph:
                     # Randomiza a condição da estrada
                     new_condition = random.choice(list(RoadConditions))
                     self.changeRoadCondition(city_name, neighbor_name, new_condition)
-                    print(f"Road condition between {city_name} and {neighbor_name} changed to {new_condition}.")
+                    #print(f"Road condition between {city_name} and {neighbor_name} changed to {new_condition}.")
 
     def changeRoadCondition(self, city1_name, city2_name, roadCondition):
         """
@@ -136,10 +136,10 @@ class Graph:
         for (neighbor, road) in self.graph[city1_name]:
             if neighbor == city2_name:
                 road.updateRoadCondition(roadCondition)
-                print(f"Weather condition between {city1_name} and {city2_name} changed to {roadCondition}.")
+                #print(f"Weather condition between {city1_name} and {city2_name} changed to {roadCondition}.")
                 return
 
-        print(f"No direct road found between {city1_name} and {city2_name}.")
+        #print(f"No direct road found between {city1_name} and {city2_name}.")
         return
 
 
@@ -155,133 +155,142 @@ class Graph:
         # for city in self.nodes:
             # print(self.nodes[city])
 
-    ################################
-    #   Guardar o grafo como png
-    ################################
-    def saveCurrentGraphAsPNG(self):
-        # Get the number of files in the images folder
-        nFiles = int(len(os.listdir('../images/')) // 2)
+        ################################
+        #   Guardar o grafo como png
+        ################################
+        def saveCurrentGraphAsPNG(self):
+            # Get the number of files in the images folder
+            nFiles = int(len(os.listdir('../images/')) // 2)
 
-        # Define filenames
-        labeled_filename = f"../images/grafo_municipios_labeled{nFiles}.png"
-        dots_filename = f"../images/grafo_municipios_dots{nFiles}.png"
+            # Define filenames
+            labeled_filename = f"../images/grafo_municipios_labeled{nFiles}.png"
+            semi_labeled_filename = f"../images/grafo_municipios_semi_labeled{nFiles}.png"
+            dots_filename = f"../images/grafo_municipios_dots{nFiles}.png"
 
-        # Create a NetworkX graph object
-        G = nx.Graph()
+            # Create a NetworkX graph object
+            G = nx.Graph()
 
-        # Add nodes to the NetworkX graph
-        for city_name, city in self.nodes.items():
-            G.add_node(city_name, pos=(city.longitude, city.latitude))
+            # Add nodes to the NetworkX graph
+            for city_name, city in self.nodes.items():
+                G.add_node(city_name, pos=(city.longitude, city.latitude))
 
-        # Add edges to the NetworkX graph and associate road conditions with edges
-        for city_name, neighbors in self.graph.items():
-            for neighbor_name, road in neighbors:
-                G.add_edge(city_name, neighbor_name, weight=road.distance, road_condition=road.roadCondition)
+            # Add edges to the NetworkX graph and associate road conditions with edges
+            for city_name, neighbors in self.graph.items():
+                for neighbor_name, road in neighbors:
+                    G.add_edge(city_name, neighbor_name, weight=road.distance, road_condition=road.roadCondition)
 
-        # Extract node positions
-        pos = nx.get_node_attributes(G, 'pos')
+            # Extract node positions
+            pos = nx.get_node_attributes(G, 'pos')
 
-        # Assign colors to edges based on RoadConditions
-        edge_colors = []
-        for u, v, data in G.edges(data=True):
-            road_condition = data[
-                'road_condition']  # Assuming road_condition is an enum or string like 'NORMAL', 'STORM'
+            # Assign colors to edges based on RoadConditions
+            edge_colors = []
+            for u, v, data in G.edges(data=True):
+                road_condition = data[
+                    'road_condition']  # Assuming road_condition is an enum or string like 'NORMAL', 'STORM'
 
-            # Define colors based on the RoadCondition (example logic)
-            if road_condition == RoadConditions.DESTROYED:
-                edge_colors.append('red')  # Red for storm
-            elif road_condition == RoadConditions.NORMAL:
-                edge_colors.append('green')  # Green for normal conditions
-            else:
-                edge_colors.append('gray')  # Default color for other conditions
+                # Define colors based on the RoadCondition (example logic)
+                if road_condition == RoadConditions.DESTROYED:
+                    edge_colors.append('red')  # Red for storm
+                elif road_condition == RoadConditions.NORMAL:
+                    edge_colors.append('green')  # Green for normal conditions
+                elif road_condition == RoadConditions.FLOOD:
+                    edge_colors.append('blue')
+                elif road_condition == RoadConditions.STORM:
+                    edge_colors.append('yellow')
+                else:
+                    edge_colors.append('gray')  # Default color for other conditions
 
-        # First plot: Full graph with labels and distances
-        plt.figure(figsize=(20, 20))  # Scale figure size for clarity
-        nx.draw(G, pos, with_labels=True, node_size=40, font_size=8, node_color='skyblue', font_color='black',
-                edge_color=edge_colors)
+            # First plot: Full graph with labels and distances
+            plt.figure(figsize=(20, 20))  # Scale figure size for clarity
+            nx.draw(G, pos, with_labels=True, node_size=40, font_size=8, node_color='skyblue', font_color='black',
+                    edge_color=edge_colors)
 
-        # Add edge labels for distances
-        edge_labels = nx.get_edge_attributes(G, 'weight')
-        edge_labels = {(u, v): f"{int(data)} km" for (u, v), data in edge_labels.items()}  # Corrected line
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8)
+            # Add edge labels for distances
+            edge_labels = nx.get_edge_attributes(G, 'weight')
+            edge_labels = {(u, v): f"{int(data)} km" for (u, v), data in edge_labels.items()}  # Corrected line
+            nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8)
 
-        plt.title("Portugal Municipal Graph (Geographical Proportions)")
-        plt.savefig(labeled_filename, dpi=200)
-        plt.show()
-        print(f"Graph with labels saved to {labeled_filename}")
+            plt.title("Portugal Municipal Graph (Geographical Proportions)")
+            plt.savefig(labeled_filename, dpi=200)
+            plt.show()
+            print(f"Graph with labels saved to {labeled_filename}")
 
-        # Second plot: Minimalist graph with dots only
-        plt.figure(figsize=(20, 20))
-        nx.draw(G, pos, with_labels=False, node_size=10, node_color='blue', edge_color=edge_colors)
+            # Second plot: Full graph with labels only
+            plt.figure(figsize=(20, 20))  # Scale figure size for clarity
+            nx.draw(G, pos, with_labels=True, node_size=40, font_size=8, node_color='skyblue', font_color='black',
+                    edge_color=edge_colors)
 
-        plt.title("Nodes Only - Portugal Municipal Graph (Geographical Proportions)")
-        plt.savefig(dots_filename, dpi=200)
-        plt.show()
-        print(f"Graph with dots only saved to {dots_filename}")
+            plt.title("Names Only - Portugal Municipal Graph (Geographical Proportions)")
+            plt.savefig(semi_labeled_filename, dpi=200)
+            plt.show()
+            print(f"Graph with semi labels saved to {semi_labeled_filename}")
 
-    def saveRouteAsPNG(self, path, end_list, supplier_list):
-        """
-        Save an image of the graph with the path found by DFS highlighted in green,
-        and cities in end_list highlighted in red.
+            # Third plot: Minimalist graph with dots only
+            plt.figure(figsize=(20, 20))
+            nx.draw(G, pos, with_labels=False, node_size=10, node_color='blue', edge_color=edge_colors)
 
-        :param path: The path list from DFS that contains the cities in order.
-        :param end_list: List of cities that need to be visited and should be colored red.
-        """
-        # Get the number of files in the images folder
-        nFiles = int(len(os.listdir('../routes/')))
+            plt.title("Nodes Only - Portugal Municipal Graph (Geographical Proportions)")
+            plt.savefig(dots_filename, dpi=200)
+            plt.show()
+            print(f"Graph with dots only saved to {dots_filename}")
 
-        # Define filenames
-        route_filename = f"../routes/route{nFiles}.png"
+        def saveRouteAsPNG(self, path, end_list):
+            """
+            Save an image of the graph with the path found by DFS highlighted in green,
+            and cities in end_list highlighted in red.
 
-        # Create a NetworkX graph object
-        G = nx.Graph()
+            :param path: The path list from DFS that contains the cities in order.
+            :param end_list: List of cities that need to be visited and should be colored red.
+            """
+            # Get the number of files in the images folder
+            nFiles = int(len(os.listdir('../routes/')))
 
-        # Add nodes to the NetworkX graph
-        for city_name, city in self.nodes.items():
-            G.add_node(city_name, pos=(city.longitude, city.latitude))
+            # Define filenames
+            route_filename = f"../routes/route{nFiles}.png"
 
-        # Add edges to the NetworkX graph
-        for city_name, neighbors in self.graph.items():
-            for neighbor_name, road in neighbors:
-                G.add_edge(city_name, neighbor_name, weight=road.distance)
+            # Create a NetworkX graph object
+            G = nx.Graph()
 
-        # Extract node positions
-        pos = nx.get_node_attributes(G, 'pos')
+            # Add nodes to the NetworkX graph
+            for city_name, city in self.nodes.items():
+                G.add_node(city_name, pos=(city.longitude, city.latitude))
 
-        # Create a subgraph with only the nodes and edges in the path
-        path_edges = [(path[i], path[i + 1]) for i in range(len(path) - 1)]
-        subgraph = G.subgraph(path)  # Create a subgraph with the path nodes
+            # Add edges to the NetworkX graph
+            for city_name, neighbors in self.graph.items():
+                for neighbor_name, road in neighbors:
+                    G.add_edge(city_name, neighbor_name, weight=road.distance)
 
-        # Prepare edge colors: everything is black by default
-        edge_colors = ['black' for _ in subgraph.edges()]
+            # Extract node positions
+            pos = nx.get_node_attributes(G, 'pos')
 
-        # Highlight the path edges by turning those edges green
-        for i, (u, v) in enumerate(subgraph.edges()):
-            if (u, v) in path_edges or (v, u) in path_edges:
-                edge_colors[i] = 'green'  # Set the color to green for the path
+            # Draw the full graph in black
+            plt.figure(figsize=(20, 20))  # Scale figure size for clarity
+            nx.draw(
+                G, pos, with_labels=True, node_size=40, font_size=8,
+                node_color='skyblue', font_color='black', edge_color='black'
+            )
 
-        # Prepare node colors: skyblue by default
-        node_colors = ['skyblue' for _ in subgraph.nodes()]
+            # Overlay the path in green
+            path_edges = [
+                (path[i], path[i + 1])
+                for i in range(len(path) - 1)
+                if G.has_edge(path[i], path[i + 1])
+            ]
+            nx.draw_networkx_edges(
+                G, pos, edgelist=path_edges, edge_color='green', width=2
+            )
 
-        # Highlight nodes in end_list by turning those nodes red
-        for i, node in enumerate(subgraph.nodes()):
-            if node in end_list:
-                node_colors[i] = 'red'  # Set the color to red for nodes in end_list
+            # Highlight nodes in end_list in red
+            end_nodes = [node for node in end_list if node in G.nodes()]
+            nx.draw_networkx_nodes(
+                G, pos, nodelist=end_nodes, node_color='red', node_size=80
+            )
 
-        # Highlight nodes in supplier_list by turning those nodes purple
-        for i, node in enumerate(subgraph.nodes()):
-            if node in supplier_list:
-                node_colors[i] = 'purple'
-
-        # First plot: Full graph with node labels, black edges, and green path
-        plt.figure(figsize=(20, 20))  # Scale figure size for clarity
-        nx.draw(subgraph, pos, with_labels=True, node_size=40, font_size=8, node_color=node_colors, font_color='black',
-                edge_color=edge_colors)
-
-        plt.title("DFS Path Highlighted in Green with Cities to Visit in Red")
-        plt.savefig(route_filename, dpi=200)
-        plt.show()
-        print(f"Graph with highlighted DFS path and cities to visit saved to {route_filename}")
+            # Save and show the final graph
+            plt.title("Graph with Full View (Black) and Path Highlighted (Green)")
+            plt.savefig(route_filename, dpi=200)
+            plt.show()
+            print(f"Graph with highlighted path and end cities saved to {route_filename}")
 
     ##############################3
     #   imprimir arestas
