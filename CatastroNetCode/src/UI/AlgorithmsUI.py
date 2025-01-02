@@ -24,42 +24,49 @@ class AlgorithmsUI:
         print("7. Dinamic Simulation")
         print("8. Exit")
 
-    def chooseStartEndPoints(self):
+    def chooseStartEndSupplierPoints(self):
         city1_name = input("Which city do you want to start from?: ").strip()
         if self.graph.getCity(city1_name) is None:
             print("Invalid city name.")
             return ("", [])
         city2_names = input("Which cities do you want to assist? (Provide as a list, separated by commas): ").strip()
+        supplier_names = input("Which cities do you want to be suppliers? (Provide as a list, separated by commas): ").strip()
 
         end_list = [city.strip() for city in city2_names.split(',')]
+        supplier_list = [supplier.strip() for supplier in supplier_names.split(',')]
 
         for city in end_list:
             if self.graph.getCity(city) is None:
                 print("Invalid city name.")
-                return ("", [])
+                return ("", [], [])
+        
+        for city in supplier_list:
+            if self.graph.getCity(city) is None:
+                print("Invalid supplier city name.")
+                return ("", [], [])
 
-        return (city1_name, end_list)
+        return (city1_name, end_list, supplier_list)
 
     def dfs(self):
         """
         Function to start DFS traversal, taking input from the user for the cities.
         The user provides the starting city and the target cities to visit.
         """
-        (city1_name, end_list) = self.chooseStartEndPoints()
+        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
-        (path, totalCostByVehicle) = depthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list=[])
+        (path, totalCostByVehicle) = depthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
 
-        self.graph.saveRouteAsPNG(path, end_list, supplier_list=[])
+        self.graph.saveRouteAsPNG(path, end_list, supplier_list)
         print("\n=== Path Costs ===")
         print(path)
         print(totalCostByVehicle)
         return
 
     def bfs(self):
-        (city1_name, end_list) = self.chooseStartEndPoints()
+        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
-        (path, totalCostByVehicle) = breadthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list=[])
-        self.graph.saveRouteAsPNG(path, end_list, supplier_list=[])
+        (path, totalCostByVehicle) = breadthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
+        self.graph.saveRouteAsPNG(path, end_list, supplier_list)
         print("\n=== Path Costs ===")
         print(path)
         print(totalCostByVehicle)
@@ -67,9 +74,9 @@ class AlgorithmsUI:
         return
 
     def uniformCost(self):
-        (city1_name, end_list) = self.chooseStartEndPoints()
+        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
-        paths = uniformCost(self.graph, self.vehicles, city1_name, end_list, supplier_list=[])
+        paths = uniformCost(self.graph, self.vehicles, city1_name, end_list, supplier_list)
 
 
         #TODO Neste path vai ter de vir um dic com cada veiculo e cada veiculo com um caminho, e um custo associado a cada caminho
@@ -87,18 +94,18 @@ class AlgorithmsUI:
                     for city in reversed(path):
                         pathToPrint.insert(0, city)
 
-            self.graph.saveRouteAsPNG(pathToPrint, end_list, supplier_list=[])
+            self.graph.saveRouteAsPNG(pathToPrint, end_list, supplier_list)
             #print(totalCostByVehicle)
         return
 
     def greddy(self):
-        (city1_name, end_list) = self.chooseStartEndPoints()
+        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
         
-        paths = greedy(self.graph, city1_name, end_list, supplier_list=[])
+        paths = greedy(self.graph, city1_name, end_list, supplier_list)
         finalPath = []
         for path in paths.values():
             finalPath = finalPath + path
-        self.graph.saveRouteAsPNG(finalPath, end_list, supplier_list=[])
+        self.graph.saveRouteAsPNG(finalPath, end_list, supplier_list)
         print("\n=== Path Costs ===")
         print(finalPath)
         # print(totalCostByVehicle)
@@ -144,14 +151,14 @@ class AlgorithmsUI:
                     print("Invalid option. Please try again.")
 
     def dynamicDFS(self):
-        (city1_name, end_list) = self.chooseStartEndPoints()
+        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
         full_path = []
         nEvents = 0
 
         print("\n=== Starting Dynamic Simulation ===")
 
-        (path, totalCostByVehicle) = depthFirstSearch(self.graph, self.vehicles, city1_name, end_list)
+        (path, totalCostByVehicle) = depthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
 
         original_path = path.copy()
 
@@ -188,21 +195,21 @@ class AlgorithmsUI:
                 print("Dynamic event triggered.")
                 self.graph.randomizeRoadConditions()
                 print("Road conditions updated. Recalculating paths...")
-                (path, totalCostByVehicle) = depthFirstSearch(self.graph, self.vehicles, path[0], end_list)
+                (path, totalCostByVehicle) = depthFirstSearch(self.graph, self.vehicles, path[0], end_list, supplier_list)
 
         print("\n=== Comparing choices ===")
         print(original_path)
         print(full_path)
 
     def dynamicBFS(self):
-        (city1_name, end_list) = self.chooseStartEndPoints()
+        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
         current_city = city1_name
         remaining_destinations = set(end_list)
         full_path = []
 
     def dynamicUniformCost(self):
-        (city1_name, end_list) = self.chooseStartEndPoints()
+        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
         current_city = city1_name
         remaining_destinations = set(end_list)
