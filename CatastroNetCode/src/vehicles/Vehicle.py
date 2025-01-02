@@ -3,9 +3,10 @@ class Vehicle:
     Superclass for all vehicle types, defining common attributes and methods.
     """
 
-    def __init__(self, name, averageComsumption, maxPeopleHelped, maxDistance, speed):
+    def __init__(self, name, averageComsumption, currentPeopleStock, maxPeopleHelped, maxDistance, speed):
         self.name = name
         self.averageComsumption = averageComsumption
+        self.currentPeopleStock = currentPeopleStock
         self.maxPeopleHelped = maxPeopleHelped
         self.maxDistance = maxDistance
         self.speed = speed
@@ -20,6 +21,7 @@ class Vehicle:
         return (
             f"Vehicle: {self.name}\n"
             f"Average Consumption: {self.averageComsumption} units/km\n"
+            f"Current people stock: {self.currentPeopleStock} kg\n"
             f"Max People Helped: {self.maxPeopleHelped} kg\n"
             f"Max Distance: {self.maxDistance} km\n"
             f"Speed: {self.speed} km/h"

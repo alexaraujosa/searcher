@@ -1,6 +1,7 @@
-from src.algorithms.Dfs import depthFirstSearch
-from src.algorithms.Bfs import breadthFirstSearch
-from src.algorithms.UniformCost import uniformCost
+from algorithms.Dfs import depthFirstSearch
+from algorithms.Bfs import breadthFirstSearch
+from algorithms.UniformCost import uniformCost
+from algorithms.Greedy import greedy
 
 
 class AlgorithmsUI:
@@ -29,17 +30,19 @@ class AlgorithmsUI:
             print("Invalid city name.")
             return
         city2_names = input("Which cities do you want to assist? (Provide as a list, separated by commas): ").strip()
+        suppliers = input("Which cities do you want to be a supplying station? (Provide as a list, separated by commas): ").strip()
 
         end_list = [city.strip() for city in city2_names.split(',')]
-
+        supplier_list = [supplier.strip() for supplier in suppliers.split(',')]
+    
         for city in end_list:
             if self.graph.getCity(city) is None:
                 print("Invalid city name.")
                 return
 
-        (path, totalCostByVehicle) = depthFirstSearch(self.graph, self.vehicles, city1_name, end_list)
+        (path, totalCostByVehicle) = depthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
 
-        self.graph.saveRouteAsPNG(path, end_list)
+        self.graph.saveRouteAsPNG(path, end_list, supplier_list)
         print("\n=== Path Costs ===")
         print(path)
         print(totalCostByVehicle)
@@ -60,7 +63,7 @@ class AlgorithmsUI:
                 return
 
         (path, totalCostByVehicle) = breadthFirstSearch(self.graph, self.vehicles, city1_name, end_list)
-        self.graph.saveRouteAsPNG(path, end_list)
+        self.graph.saveRouteAsPNG(path, end_list, supplier_list=[])
         print("\n=== Path Costs ===")
         print(path)
         print(totalCostByVehicle)
@@ -93,6 +96,26 @@ class AlgorithmsUI:
         return
 
     def greddy(self):
+        city1_name = input("Which city do you want to start from? ").strip()
+        if self.graph.getCity(city1_name) is None:
+            print("Invalid city name.")
+            return
+        city2_names = input("Which cities do you want to assist? (Provide as a list, separated by commas): ").strip()
+
+        end_list = [city.strip() for city in city2_names.split(',')]
+        for city in end_list:
+            if self.graph.getCity(city) is None:
+                print("Invalid city name.")
+                return
+        
+        paths = greedy(self.graph, city1_name, end_list)
+        finalPath = []
+        for path in paths.values():
+            finalPath = finalPath + path
+        self.graph.saveRouteAsPNG(finalPath, end_list, supplier_list=[])
+        print("\n=== Path Costs ===")
+        print(finalPath)
+        # print(totalCostByVehicle)
         return
 
     def astar(self):

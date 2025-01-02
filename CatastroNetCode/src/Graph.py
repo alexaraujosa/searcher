@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt  # idem
 from networkx.classes import nodes, neighbors
 
 from City import City
-from src.RoadConditions import RoadConditions
+from RoadConditions import RoadConditions
 
 
 
@@ -152,6 +152,8 @@ class Graph:
 
         for city1 in self.graph.keys():
             print(f"{city1}: {self.graph[city1]}")
+        # for city in self.nodes:
+            # print(self.nodes[city])
 
     ################################
     #   Guardar o grafo como png
@@ -217,7 +219,7 @@ class Graph:
         plt.show()
         print(f"Graph with dots only saved to {dots_filename}")
 
-    def saveRouteAsPNG(self, path, end_list):
+    def saveRouteAsPNG(self, path, end_list, supplier_list):
         """
         Save an image of the graph with the path found by DFS highlighted in green,
         and cities in end_list highlighted in red.
@@ -266,6 +268,11 @@ class Graph:
             if node in end_list:
                 node_colors[i] = 'red'  # Set the color to red for nodes in end_list
 
+        # Highlight nodes in supplier_list by turning those nodes purple
+        for i, node in enumerate(subgraph.nodes()):
+            if node in supplier_list:
+                node_colors[i] = 'purple'
+
         # First plot: Full graph with node labels, black edges, and green path
         plt.figure(figsize=(20, 20))  # Scale figure size for clarity
         nx.draw(subgraph, pos, with_labels=True, node_size=40, font_size=8, node_color=node_colors, font_color='black',
@@ -308,7 +315,7 @@ class Graph:
         travelTime = vehicle.getTravelTime(distance)
         fuelNeeded = vehicle.getFuelNeeded(distance)
 
-        return vehiclePenalty * (travelTime + fuelNeeded)
+        return (vehiclePenalty * travelTime) + fuelNeeded
 
 
 
@@ -354,3 +361,9 @@ class Graph:
     #################################
     # devolve heuristica do nodo
     #################################
+    def getHeuristica(self, start, end):
+        start_city = self.getCity(start)
+        end_city = self.getCity(end)
+        if not start_city or not end_city:
+            return
+        return start_city.distance_to(end_city)

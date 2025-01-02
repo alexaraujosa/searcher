@@ -1,10 +1,10 @@
 from time import sleep
 
-from src.Graph import Graph
-from src.RoadConditions import RoadConditions
+from Graph import Graph
+from RoadConditions import RoadConditions
+from vehicles.Vehicle import Vehicle
 
-
-def depthFirstSearch(graph, vehicles, start, end_list, path=None, visited=None, remaining=None):
+def depthFirstSearch(graph, vehicles, start, end_list, supplier_list, path=None, visited=None, remaining=None):
     """
     Depth-First Search (DFS) algorithm to visit all cities in `end_list` starting from `start`.
 
@@ -30,7 +30,14 @@ def depthFirstSearch(graph, vehicles, start, end_list, path=None, visited=None, 
 
     # If the current city is in the remaining cities to be visited, remove it.
     if start in remaining:
+        city = graph.getCity(start)
+        # for vehicle in vehicles:
+            # city.update_population(city.population - vehicle.currentPeopleStock)
         remaining.remove(start)
+    
+    if start in supplier_list:
+        for vehicle in vehicles:
+            vehicle.currentPeopleStock = vehicle.maxPeopleHelped
 
     # Base case: If all cities in `end_list` have been visited, calculate the cost.
     if not remaining:
@@ -46,7 +53,7 @@ def depthFirstSearch(graph, vehicles, start, end_list, path=None, visited=None, 
         if neighbor not in visited:
             # Recursively visit the neighbors that haven't been visited yet.
             result = depthFirstSearch(
-                graph, vehicles, neighbor, end_list, path[:], visited.copy(), remaining.copy()
+                graph, vehicles, neighbor, end_list, supplier_list, path[:], visited.copy(), remaining.copy()
             )
             if result:
                 # If a valid path is found, return it.

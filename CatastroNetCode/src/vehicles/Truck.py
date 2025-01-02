@@ -1,5 +1,5 @@
-from src.vehicles.Vehicle import Vehicle
-from src.RoadConditions import RoadConditions
+from vehicles.Vehicle import Vehicle
+from RoadConditions import RoadConditions
 
 
 class Truck(Vehicle):
@@ -7,8 +7,8 @@ class Truck(Vehicle):
     A subclass representing a truck.
     (litros por 100km, peso maximo em kilos, distancia maxima, )
     """
-    def __init__(self, averageComsumption=35, maxPeopleHelped=100, maxDistance=1200, speed=90):
-        super().__init__("Truck", averageComsumption, maxPeopleHelped, maxDistance, speed)
+    def __init__(self, averageComsumption=35, currentPeopleStock = 100, maxPeopleHelped=100, maxDistance=1200, speed=90):
+        super().__init__("Truck", averageComsumption, currentPeopleStock, maxPeopleHelped, maxDistance, speed)
         self.type = "Land"
 
     def getVehiclePenalty(self, roadCondition):
@@ -35,6 +35,7 @@ class Truck(Vehicle):
         return (
             f"Vehicle: {self.name}\n"
             f"Average Consumption: {self.averageComsumption} L/100km\n"
+            f"Current people stock: {self.currentPeopleStock}\n"
             f"Max People Helped: {self.maxPeopleHelped}\n"
             f"Max Distance: {self.maxDistance} km\n"
             f"Speed: {self.speed} km/h"

@@ -1,13 +1,13 @@
-from src.vehicles.Vehicle import Vehicle
-from src.RoadConditions import RoadConditions
+from vehicles.Vehicle import Vehicle
+from RoadConditions import RoadConditions
 
 
 class Drone(Vehicle):
     """
     A subclass representing a drone.
     """
-    def __init__(self, averageConsumption=0.05, maxPeopleHelped=1, maxDistance=20, speed=50):
-        super().__init__("Drone", averageConsumption, maxPeopleHelped, maxDistance, speed)
+    def __init__(self, averageConsumption=0.05, currentPeopleStock = 1, maxPeopleHelped=1, maxDistance=20, speed=50):
+        super().__init__("Drone", averageConsumption, currentPeopleStock, maxPeopleHelped, maxDistance, speed)
         self.type = "Air"
         self.requires_pilot = False
 
@@ -36,6 +36,7 @@ class Drone(Vehicle):
         return (
             f"Vehicle: {self.name}\n"
             f"Average Consumption: {self.averageComsumption} kWh/h\n"
+            f"Current people stock: {self.currentPeopleStock}\n"
             f"Max People Helped: {self.maxPeopleHelped}\n"
             f"Max Distance: {self.maxDistance} km\n"
             f"Speed: {self.speed} km/h"

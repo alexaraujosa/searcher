@@ -1,13 +1,13 @@
-from src.vehicles.Vehicle import Vehicle
-from src.RoadConditions import RoadConditions
+from vehicles.Vehicle import Vehicle
+from RoadConditions import RoadConditions
 
 
 class Boat(Vehicle):
     """
     A subclass representing a boat.
     """
-    def __init__(self, averageConsumption=15, maxPeopleHelped=50, maxDistance=300, speed=40):
-        super().__init__("Boat", averageConsumption, maxPeopleHelped, maxDistance, speed)
+    def __init__(self, averageConsumption=15, currentPeopleStock = 50, maxPeopleHelped=50, maxDistance=300, speed=40):
+        super().__init__("Boat", averageConsumption, currentPeopleStock, maxPeopleHelped, maxDistance, speed)
         self.type = "Water"
 
     def getVehiclePenalty(self, roadCondition):
@@ -34,6 +34,7 @@ class Boat(Vehicle):
         return (
             f"Vehicle: {self.name}\n"
             f"Average Consumption: {self.averageComsumption} L/h\n"
+            f"Current people stock: {self.currentPeopleStock}\n"
             f"Max People Helped: {self.maxPeopleHelped}\n"
             f"Max Distance: {self.maxDistance} km\n"
             f"Speed: {self.speed} km/h"
