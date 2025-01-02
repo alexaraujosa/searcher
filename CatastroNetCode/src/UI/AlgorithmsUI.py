@@ -47,9 +47,9 @@ class AlgorithmsUI:
         """
         (city1_name, end_list) = self.chooseStartEndPoints()
 
-        (path, totalCostByVehicle) = depthFirstSearch(self.graph, self.vehicles, city1_name, end_list)
+        (path, totalCostByVehicle) = depthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list=[])
 
-        self.graph.saveRouteAsPNG(path, end_list)
+        self.graph.saveRouteAsPNG(path, end_list, supplier_list=[])
         print("\n=== Path Costs ===")
         print(path)
         print(totalCostByVehicle)
@@ -58,8 +58,8 @@ class AlgorithmsUI:
     def bfs(self):
         (city1_name, end_list) = self.chooseStartEndPoints()
 
-        (path, totalCostByVehicle) = breadthFirstSearch(self.graph, self.vehicles, city1_name, end_list)
-        self.graph.saveRouteAsPNG(path, end_list)
+        (path, totalCostByVehicle) = breadthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list=[])
+        self.graph.saveRouteAsPNG(path, end_list, supplier_list=[])
         print("\n=== Path Costs ===")
         print(path)
         print(totalCostByVehicle)
@@ -69,7 +69,7 @@ class AlgorithmsUI:
     def uniformCost(self):
         (city1_name, end_list) = self.chooseStartEndPoints()
 
-        paths = uniformCost(self.graph, self.vehicles, city1_name, end_list)
+        paths = uniformCost(self.graph, self.vehicles, city1_name, end_list, supplier_list=[])
 
 
         #TODO Neste path vai ter de vir um dic com cada veiculo e cada veiculo com um caminho, e um custo associado a cada caminho
@@ -87,14 +87,14 @@ class AlgorithmsUI:
                     for city in reversed(path):
                         pathToPrint.insert(0, city)
 
-            self.graph.saveRouteAsPNG(pathToPrint, end_list)
+            self.graph.saveRouteAsPNG(pathToPrint, end_list, supplier_list=[])
             #print(totalCostByVehicle)
         return
 
     def greddy(self):
         (city1_name, end_list) = self.chooseStartEndPoints()
         
-        paths = greedy(self.graph, city1_name, end_list)
+        paths = greedy(self.graph, city1_name, end_list, supplier_list=[])
         finalPath = []
         for path in paths.values():
             finalPath = finalPath + path
