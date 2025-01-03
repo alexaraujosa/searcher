@@ -29,21 +29,25 @@ class AlgorithmsUI:
         if self.graph.getCity(city1_name) is None:
             print("Invalid city name.")
             return ("", [])
+
         city2_names = input("Which cities do you want to assist? (Provide as a list, separated by commas): ").strip()
-        supplier_names = input("Which cities do you want to be suppliers? (Provide as a list, separated by commas): ").strip()
 
         end_list = [city.strip() for city in city2_names.split(',')]
-        supplier_list = [supplier.strip() for supplier in supplier_names.split(',')]
 
         for city in end_list:
             if self.graph.getCity(city) is None:
                 print("Invalid city name.")
                 return ("", [], [])
-        
+
+        supplier_names = input("Which cities do you want to be suppliers? (Provide as a list, separated by commas): ").strip()
+
+        supplier_list = [supplier.strip() for supplier in supplier_names.split(',')]
+
         for city in supplier_list:
-            if self.graph.getCity(city) is None:
-                print("Invalid supplier city name.")
-                return ("", [], [])
+            if supplier_list == "":
+                if self.graph.getCity(city) is None:
+                    print("Invalid supplier city name.")
+                    return ("", [], [])
 
         return (city1_name, end_list, supplier_list)
 
@@ -54,22 +58,32 @@ class AlgorithmsUI:
         """
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
-        (path, totalCostByVehicle) = depthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
+        pathsByGoal = depthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
 
-        self.graph.saveRouteAsPNG(path, end_list, supplier_list)
+        pathToPrint = []
+        for city in end_list:
+            for cities in pathsByGoal[city]:
+                pathToPrint.append(cities)
+
+        self.graph.saveRouteAsPNG(pathToPrint, end_list, supplier_list)
         print("\n=== Path Costs ===")
-        print(path)
-        print(totalCostByVehicle)
+        print(pathsByGoal)
         return
 
     def bfs(self):
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
-        (path, totalCostByVehicle) = breadthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
-        self.graph.saveRouteAsPNG(path, end_list, supplier_list)
+        pathsByGoal = breadthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
+
+        pathToPrint = []
+        for city in end_list:
+            for cities in pathsByGoal[city]:
+                pathToPrint.append(cities)
+
+        self.graph.saveRouteAsPNG(pathToPrint, end_list, supplier_list)
         print("\n=== Path Costs ===")
-        print(path)
-        print(totalCostByVehicle)
+        print(pathsByGoal)
+        return
 
         return
 
@@ -86,16 +100,18 @@ class AlgorithmsUI:
             pathToPrint = []
             print(f"=== Vehicle {vehicle.name} ===")
 
-            for destinies in paths[vehicle.name]:
-                for destination, (custo, path) in destinies.items():
-                    print(f"=== Destination {destination} ===")
-                    print(f"Cost: {custo}, Path: {path}")
+            # Iterate through the destinations for the vehicle
+            for destination, (cost, path) in paths[vehicle.name].items():
+                print(f"=== Destination {destination} ===")
+                print(f"Cost: {cost}, Path: {path}")
 
-                    for city in reversed(path):
-                        pathToPrint.insert(0, city)
+                # Add the path to the print list in reverse order
+                for city in reversed(path):
+                    pathToPrint.insert(0, city)
 
+            # Save the route for the vehicle
             self.graph.saveRouteAsPNG(pathToPrint, end_list, supplier_list)
-            #print(totalCostByVehicle)
+
         return
 
     def greddy(self):
@@ -140,7 +156,7 @@ class AlgorithmsUI:
                 case "3":
                     self.dynamicUniformCost()
                 case "4":
-                    self.greddy()
+                    self.dynamicGreedy()
                 case "5":
                     self.astar()
                 case "6":
@@ -153,67 +169,249 @@ class AlgorithmsUI:
     def dynamicDFS(self):
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
-        full_path = []
+        full_path = {city: [] for city in end_list}
         nEvents = 0
 
         print("\n=== Starting Dynamic Simulation ===")
 
-        (path, totalCostByVehicle) = depthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
+        pathsByGoal = depthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
 
-        original_path = path.copy()
+        original_paths = {city: path[:] for city, path in pathsByGoal.items()}
 
-        if not path:
-            print("No valid path found to the remaining destinations.")
-            return
+        for city in end_list:
+            if not pathsByGoal[city]:
+                print(f"Didn't find any path for {city}.")
 
-        print("\n=== Initial Path Has Been Calculated ===")
-        print(f"Path: {path}")
+        print("\n=== Initial Paths Have Been Calculated ===")
+
+        for city in end_list:
+            print(f"For {city}: {pathsByGoal[city]}")
 
         print("\n=== Starting traversal ===")
 
-        while end_list:
-            current_city = path[0]
-            if len(path) > 1:
-                next_city = path[1]
-            full_path.append(current_city)
+        remaining_goals = end_list[:]
 
-            if current_city in end_list:
-                end_list.remove(current_city)
+        while remaining_goals :
+            print("\n---------- Voyage Information ----------")
+            for city in remaining_goals[:]:
+                path = pathsByGoal[city]
+                if len(path) > 1:
+                    print(f"The convoy going to {city}, moved from {path[0]} to {path[1]}.")
+                    full_path[city].append(path.pop(0))  # Append current node and move to next
+                elif len(path) == 1:
+                    print(f"The convoy going to {city} arrived!")
+                    full_path[city].append(path.pop(0))  # Append the final node
+                    remaining_goals.remove(city)
 
-            if not end_list:
-                break
-            if len(path) > 1:
-                print(f"Moving from {current_city} to {next_city}...")
-            else:
-                print(f"Arrived to {current_city}!!")
-            sleep(0.3)
-
-            path.pop(0)
+            sleep(0.5)
 
             if random.random() < 0.1 and nEvents < 3:
-                nEvents += 1
                 print("Dynamic event triggered.")
+                nEvents += 1
                 self.graph.randomizeRoadConditions()
                 print("Road conditions updated. Recalculating paths...")
-                (path, totalCostByVehicle) = depthFirstSearch(self.graph, self.vehicles, path[0], end_list, supplier_list)
+                for city in remaining_goals:
+                    current_node = pathsByGoal[city][0] if pathsByGoal[city] else city1_name
+                    newRoutes = depthFirstSearch(self.graph, self.vehicles, current_node, [city], supplier_list)
+                    pathsByGoal[city] = newRoutes[city]
 
-        print("\n=== Comparing choices ===")
-        print(original_path)
-        print(full_path)
+        print("\n=== Comparing Choices ===")
+        print("Old Routes:")
+        for city, path in original_paths.items():
+            print(f"{city}: {path}")
+
+        print("New Routes:")
+        for city, path in full_path.items():
+            print(f"{city}: {path}")
 
     def dynamicBFS(self):
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
-        current_city = city1_name
-        remaining_destinations = set(end_list)
-        full_path = []
+        full_path = {city: [] for city in end_list}
+        nEvents = 0
+
+        print("\n=== Starting Dynamic Simulation ===")
+
+        pathsByGoal = breadthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
+
+        original_paths = {city: path[:] for city, path in pathsByGoal.items()}
+
+        for city in end_list:
+            if not pathsByGoal[city]:
+                print(f"Didn't find any path for {city}.")
+
+        print("\n=== Initial Paths Have Been Calculated ===")
+
+        for city in end_list:
+            print(f"For {city}: {pathsByGoal[city]}")
+
+        print("\n=== Starting traversal ===")
+
+        remaining_goals = end_list[:]
+
+        while remaining_goals :
+            print("\n---------- Voyage Information ----------")
+            for city in remaining_goals[:]:
+                path = pathsByGoal[city]
+                if len(path) > 1:
+                    print(f"The convoy going to {city}, moved from {path[0]} to {path[1]}.")
+                    full_path[city].append(path.pop(0))  # Append current node and move to next
+                elif len(path) == 1:
+                    print(f"The convoy going to {city} arrived!")
+                    full_path[city].append(path.pop(0))  # Append the final node
+                    remaining_goals.remove(city)
+
+            sleep(0.5)
+
+            if random.random() < 0.1 and nEvents < 3:
+                print("Dynamic event triggered.")
+                nEvents += 1
+                self.graph.randomizeRoadConditions()
+                print("Road conditions updated. Recalculating paths...")
+                for city in remaining_goals:
+                    current_node = pathsByGoal[city][0] if pathsByGoal[city] else city1_name
+                    newRoutes = breadthFirstSearch(self.graph, self.vehicles, current_node, [city], supplier_list)
+                    pathsByGoal[city] = newRoutes[city]
+
+        print("\n=== Comparing Choices ===")
+        print("Old Routes:")
+        for city, path in original_paths.items():
+            print(f"{city}: {path}")
+
+        print("New Routes:")
+        for city, path in full_path.items():
+            print(f"{city}: {path}")
 
     def dynamicUniformCost(self):
+        city1_name, end_list, supplier_list = self.chooseStartEndSupplierPoints()
+
+        full_path = {}
+        nEvents = 0
+
+        print("\n=== Starting Dynamic Simulation ===")
+
+        # Call uniformCost, which now returns a nested dictionary
+        allPaths = uniformCost(self.graph, self.vehicles, city1_name, end_list, supplier_list)
+
+        # Extract paths by goal from the vehicle dictionaries
+        pathsByGoal = {}
+        for vehicle, goals in allPaths.items():
+            for goal, (cost, path) in goals.items():
+                pathsByGoal[goal] = path
+
+        # Create a copy for comparison later
+        original_paths = {goal: path[:] for goal, path in pathsByGoal.items()}
+
+        for city in end_list:
+            if city not in pathsByGoal or not pathsByGoal[city]:
+                print(f"Didn't find any path for {city}.")
+
+        print("\n=== Initial Paths Have Been Calculated ===")
+        for city in end_list:
+            print(f"For {city}: {pathsByGoal.get(city, [])}")
+
+        print("\n=== Starting Traversal ===")
+
+        remaining_goals = end_list[:]
+
+        while remaining_goals:
+            print("\n---------- Voyage Information ----------")
+            for city in remaining_goals[:]:  # Iterate over a copy
+                path = pathsByGoal.get(city, [])
+                if city not in full_path:
+                    full_path[city] = []
+
+                if len(path) > 1:
+                    print(f"The convoy going to {city}, moved from {path[0]} to {path[1]}.")
+                    full_path[city].append(path.pop(0))  # Append current node and move to next
+                elif len(path) == 1:
+                    print(f"The convoy going to {city} arrived!")
+                    full_path[city].append(path.pop(0))  # Append the final node
+                    remaining_goals.remove(city)
+
+            sleep(0.5)
+
+            if random.random() < 0.1 and nEvents < 3:
+                print("Dynamic event triggered.")
+                nEvents += 1
+                self.graph.randomizeRoadConditions()
+                print("Road conditions updated. Recalculating paths...")
+
+                for city in remaining_goals:
+                    current_node = pathsByGoal[city][0] if city in pathsByGoal and pathsByGoal[city] else city1_name
+                    updatedPaths = uniformCost(self.graph, self.vehicles, current_node, [city], supplier_list)
+
+                    # Update only the relevant city's path from the returned vehicle dictionary
+                    for vehicle, goals in updatedPaths.items():
+                        if city in goals:
+                            pathsByGoal[city] = goals[city][1]  # Update with the new path
+
+        print("\n=== Comparing Choices ===")
+        print("Old Routes:")
+        for city, path in original_paths.items():
+            print(f"{city}: {path}")
+
+        print("New Routes:")
+        for city, path in full_path.items():
+            print(f"{city}: {path}")
+
+    def dynamicGreedy(self):
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
-        current_city = city1_name
-        remaining_destinations = set(end_list)
-        full_path = []
+        full_path = {city: [] for city in end_list}
+        nEvents = 0
+
+        print("\n=== Starting Dynamic Simulation ===")
+
+        pathsByGoal = greedy(self.graph, self.vehicles, city1_name, end_list, supplier_list)
+
+        original_paths = {city: path[:] for city, path in pathsByGoal.items()}
+
+        for city in end_list:
+            if not pathsByGoal[city]:
+                print(f"Didn't find any path for {city}.")
+
+        print("\n=== Initial Paths Have Been Calculated ===")
+
+        for city in end_list:
+            print(f"For {city}: {pathsByGoal[city]}")
+
+        print("\n=== Starting traversal ===")
+
+        remaining_goals = end_list[:]
+
+        while remaining_goals :
+            print("\n---------- Voyage Information ----------")
+            for city in remaining_goals[:]:
+                path = pathsByGoal[city]
+                if len(path) > 1:
+                    print(f"The convoy going to {city}, moved from {path[0]} to {path[1]}.")
+                    full_path[city].append(path.pop(0))  # Append current node and move to next
+                elif len(path) == 1:
+                    print(f"The convoy going to {city} arrived!")
+                    full_path[city].append(path.pop(0))  # Append the final node
+                    remaining_goals.remove(city)
+
+            sleep(0.5)
+
+            if random.random() < 0.1 and nEvents < 3:
+                print("Dynamic event triggered.")
+                nEvents += 1
+                self.graph.randomizeRoadConditions()
+                print("Road conditions updated. Recalculating paths...")
+                for city in remaining_goals:
+                    current_node = pathsByGoal[city][0] if pathsByGoal[city] else city1_name
+                    newRoutes = greedy(self.graph, self.vehicles, current_node, [city], supplier_list)
+                    pathsByGoal[city] = newRoutes[city]
+
+        print("\n=== Comparing Choices ===")
+        print("Old Routes:")
+        for city, path in original_paths.items():
+            print(f"{city}: {path}")
+
+        print("New Routes:")
+        for city, path in full_path.items():
+            print(f"{city}: {path}")
 
     def run(self):
         while self.running:

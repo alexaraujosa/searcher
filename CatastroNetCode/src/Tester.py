@@ -107,7 +107,7 @@ if __name__ == "__main__":
     # Call actual DFS and BFS functions
     def dfs_function(graph, vehicles, start, end_list):
         # Replace with your actual DFS function
-        return depthFirstSearch(graph, vehicles, start, end_list)
+        return depthFirstSearch(graph, vehicles, start, end_list, [])
 
 
     def bfs_function(graph, vehicles, start, end_list):

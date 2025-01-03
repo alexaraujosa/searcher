@@ -4,62 +4,44 @@ from Graph import Graph
 from RoadConditions import RoadConditions
 from vehicles.Vehicle import Vehicle
 
-def depthFirstSearch(graph, vehicles, start, end_list, supplier_list, path=None, visited=None, remaining=None):
+def depthFirstSearch(graph, vehicles, start, end_list, supplier_list):
     """
-    Depth-First Search (DFS) algorithm to visit all cities in `end_list` starting from `start`.
+    Perform Depth-First Search to find paths to multiple goal nodes.
 
-    :param graph: The graph containing cities and roads.
-    :param vehicles: List of vehicles available for travel.
-    :param start: Starting city.
-    :param end_list: List of cities to visit.
-    :param path: Current path being explored (initially None, defaults to empty).
-    :param visited: Set of visited cities (initially None, defaults to empty).
-    :param remaining: Cities yet to be visited (initially None, defaults to `end_list`).
-    :return: The path and total cost of visiting the cities in `end_list` or None if no valid path exists.
+    Parameters:
+        graph: An object with a method `getNeighbors(node)` that returns neighbors of a node.
+        start: The starting node.
+        end_list: A list of goal nodes.
+
+    Returns:
+        dict: A dictionary where keys are goal nodes and values are paths (lists of nodes) to reach them.
+              If a goal node is unreachable, its value will be an empty list.
     """
-    if path is None:
-        path = []  # Initialize the path if not provided.
-    if visited is None:
-        visited = set()  # Set to track visited cities.
-    if remaining is None:
-        remaining = set(end_list)  # Set of cities we need to visit.
+    pathsByGoal = {}
 
-    # Add the current city to the path and mark it as visited.
-    path.append(start)
-    visited.add(start)
+    for city in end_list:
+        stack = [(start, [start])]
+        visited = set()
+        found = False
 
-    # If the current city is in the remaining cities to be visited, remove it.
-    if start in remaining:
-        city = graph.getCity(start)
-        # for vehicle in vehicles:
-            # city.update_population(city.population - vehicle.currentPeopleStock)
-        remaining.remove(start)
-    
-    if start in supplier_list:
-        for vehicle in vehicles:
-            vehicle.currentPeopleStock = vehicle.maxPeopleHelped
+        while stack:
+            current_city, path = stack.pop()
 
-    # Base case: If all cities in `end_list` have been visited, calculate the cost.
-    if not remaining:
-        # Calculate the total cost of the path.
-        totalCostByVehicle = graph.pathCost(path, end_list, vehicles, 10000)  # Assuming 10000 people for calculation
-        return path, totalCostByVehicle
+            if current_city == city:
+                pathsByGoal[city] = path
+                found = True
+                break
 
-    # Explore neighbors and continue searching recursively for each unvisited neighbor.
-    for (neighbor, road) in graph.getNeighborsRoadPair(start):
-        # Only visit neighbors that haven't been visited yet.
-        if road.roadCondition == RoadConditions.DESTROYED:
-            continue
-        if neighbor not in visited:
-            # Recursively visit the neighbors that haven't been visited yet.
-            result = depthFirstSearch(
-                graph, vehicles, neighbor, end_list, supplier_list, path[:], visited.copy(), remaining.copy()
-            )
-            if result:
-                # If a valid path is found, return it.
-                return result
+            if current_city in visited:
+                continue
 
-    path.pop()  # Remove the last city from the path.
+            visited.add(current_city)
 
-    # Return None if no valid path is found after backtracking.
-    return None
+            for neighbor in graph.getNeighbors(current_city):
+                if neighbor not in visited:
+                    stack.append((neighbor, path + [neighbor]))
+
+        if not found:
+            pathsByGoal[city] = []
+
+    return pathsByGoal

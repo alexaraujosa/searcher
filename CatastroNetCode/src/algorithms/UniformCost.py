@@ -15,10 +15,11 @@ def uniformCost(graph, vehicles, start, end_list, supplier_list):
     """
     #Aqui teriamos (Veiculo->{nome_cidadeObjetivo: (custo,caminho)})
     pathsByVehicle = {}
-    # Priority queue to hold (cost, node, path)
+
     for vehicle in vehicles:
-        pathsByVehicle[vehicle.name] = []
+        pathsByVehicle[vehicle.name] = {}
         pathToCity = {}
+
         for city_name in end_list:
             found = False
             priority_queue = [(0, start, [start])]
@@ -31,8 +32,7 @@ def uniformCost(graph, vehicles, start, end_list, supplier_list):
 
                 # If we reach the goal, return the cost and path
                 if current_city == city_name:
-                    pathToCity[city_name] = (current_cost, path)
-                    pathsByVehicle[vehicle.name].append(pathToCity)
+                    pathsByVehicle[vehicle.name][city_name] = (current_cost, path)
                     found = True
                     break
 
@@ -49,6 +49,6 @@ def uniformCost(graph, vehicles, start, end_list, supplier_list):
 
             # If the goal is not reachable
             if not found:
-                pathsByVehicle[vehicle.name].append((float('inf'), []))
+                pathsByVehicle[vehicle.name][city_name] = (float('inf'), [])
 
     return pathsByVehicle
