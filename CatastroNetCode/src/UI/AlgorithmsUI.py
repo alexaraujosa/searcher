@@ -10,7 +10,7 @@ from algorithms.Bidirected.Astar import aStarSearch
 from algorithms.OnePath.DfsSinglePath import depthFirstSearchSinglePath
 from algorithms.OnePath.BfsSinglePath import breadthFirstSearchSinglePath
 
-from src.algorithms.OnePath.GreedySinglePath import greedySinglePath
+from algorithms.OnePath.GreedySinglePath import greedySinglePath
 
 
 class AlgorithmsUI:
@@ -154,15 +154,19 @@ class AlgorithmsUI:
 
     def greddy(self):
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+        backEndList = end_list.copy()
         
         paths = greedy(self.graph, city1_name, end_list, supplier_list)
-        finalPath = []
-        for path in paths.values():
-            finalPath = finalPath + path
-        self.graph.saveRouteAsPNG(finalPath, end_list, supplier_list)
-        print("\n=== Path Costs ===")
-        print(finalPath)
-        # print(totalCostByVehicle)
+        pathToPrint = []
+        for destination in paths:
+            path = paths[destination]
+            cost = self.graph.pathCost(path, [destination], self.vehicles, 0)
+            print(f"=== Destitation {destination} ===")
+            print(f"Cost: {cost}")
+            print(f"Path: {path}")
+            pathToPrint = pathToPrint + path
+
+        self.graph.saveRouteAsPNG(pathToPrint, backEndList, supplier_list)
         return
 
     def greedyOnePath(self):
@@ -212,39 +216,39 @@ class AlgorithmsUI:
 
         return
 
-    def greddy(self):
-        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+    # def greddy(self):
+    #     (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
         
-        paths = greedy(self.graph, city1_name, end_list, supplier_list)
-        finalPath = []
-        for path in paths.values():
-            finalPath = finalPath + path
-        self.graph.saveRouteAsPNG(finalPath, end_list, supplier_list)
-        print("\n=== Path Costs ===")
-        print(finalPath)
-        # print(totalCostByVehicle)
-        return
+    #     paths = greedy(self.graph, city1_name, end_list, supplier_list)
+    #     finalPath = []
+    #     for path in paths.values():
+    #         finalPath = finalPath + path
+    #     self.graph.saveRouteAsPNG(finalPath, end_list, supplier_list)
+    #     print("\n=== Path Costs ===")
+    #     print(finalPath)
+    #     # print(totalCostByVehicle)
+    #     return
 
-    def astar(self):
-        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+    # def astar(self):
+    #     (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
-        paths = aStarSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
+    #     paths = aStarSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
 
-        for vehicle in self.vehicles:
-            pathToPrint = []
-            print(f"=== Vehicle {vehicle.name} ===")
+    #     for vehicle in self.vehicles:
+    #         pathToPrint = []
+    #         print(f"=== Vehicle {vehicle.name} ===")
 
-            # Iterate through the destinations for the vehicle
-            for destination, (cost, path) in paths[vehicle.name].items():
-                print(f"=== Destination {destination} ===")
-                print(f"Cost: {cost}, Path: {path}")
+    #         # Iterate through the destinations for the vehicle
+    #         for destination, (cost, path) in paths[vehicle.name].items():
+    #             print(f"=== Destination {destination} ===")
+    #             print(f"Cost: {cost}, Path: {path}")
 
-                # Add the path to the print list in reverse order
-                for city in reversed(path):
-                    pathToPrint.insert(0, city)
+    #             # Add the path to the print list in reverse order
+    #             for city in reversed(path):
+    #                 pathToPrint.insert(0, city)
 
-            # Save the route for the vehicle
-            self.graph.saveRouteAsPNG(pathToPrint, end_list, supplier_list)
+    #         # Save the route for the vehicle
+    #         self.graph.saveRouteAsPNG(pathToPrint, end_list, supplier_list)
 
 
     def antColony(self):
@@ -618,8 +622,8 @@ class AlgorithmsUI:
             elif choice == "3":
                 self.uniformCost()
             elif choice == "4":
-                #self.greddy()
-                self.greedyOnePath()
+                self.greddy()
+                # self.greedyOnePath()
             elif choice == "5":
                 self.astar()
             elif choice == "6":
