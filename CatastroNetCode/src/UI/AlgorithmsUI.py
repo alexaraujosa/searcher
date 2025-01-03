@@ -640,11 +640,25 @@ class AlgorithmsUI:
             choice = input("Select an option: ").strip()
 
             if choice == "1":
-                self.dfs()
-                #self.dfsOnePath()
+                print("1. Run DFS in single path.")
+                print("2. Run DFS bidirectional.")
+                choice2 = input("Select an option: ").strip()
+                if choice2 == "1":
+                    self.dfsOnePath()
+                elif choice2 == "2":
+                    self.dfs()
+                else:
+                    print("Invalid option. Try again.")
             elif choice == "2":
-                self.bfs()
-                #self.bfsOnePath()
+                print("1. Run BFS in single path.")
+                print("2. Run BFS bidirectional.")
+                choice2 = input("Select an option: ").strip()
+                if choice2 == "1":
+                    self.bfsOnePath()
+                elif choice2 == "2":
+                    self.bfs()
+                else:
+                    print("Invalid option. Try again.")
             elif choice == "3":
                 self.uniformCost()
             elif choice == "4":
