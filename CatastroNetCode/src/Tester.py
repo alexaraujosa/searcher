@@ -2,29 +2,27 @@ import time
 from datetime import datetime
 
 from src.Graph import Graph
-from src.algorithms.Bfs import breadthFirstSearch
-from src.algorithms.Dfs import depthFirstSearch
+from src.algorithms.Bidirected.Bfs import breadthFirstSearch
+from src.algorithms.Bidirected.Dfs import depthFirstSearch
+from src.algorithms.Bidirected.UniformCost import uniformCost
+from src.algorithms.Bidirected.Greedy import greedy
+from src.algorithms.Bidirected.Astar import aStarSearch
 from src.vehicles.Boat import Boat
 from src.vehicles.Drone import Drone
 from src.vehicles.Helicopter import Helicopter
 from src.vehicles.Truck import Truck
 
-
-def testAlgorithms(graph, vehicles, start, end_list, dfs_function, bfs_function):
+def testAlgorithms(graph, vehicles, start, end_list):
     """
-    Run DFS and BFS algorithms on the given graph, vehicles, and start/end cities.
+    Run all algorithms on the given graph, vehicles, and start/end cities.
     Log the results into a Results.txt file.
-
-    :param graph: The graph object representing the cities and roads.
-    :param vehicles: List of available vehicles for travel.
-    :param start: Starting city for the journey.
-    :param end_list: List of destination cities to visit.
-    :param dfs_function: The depth-first search (DFS) function.
-    :param bfs_function: The breadth-first search (BFS) function.
     """
+
+    # Placeholder supplier list
+    supplier_list = []
 
     # Open Results.txt file in append mode
-    with open("Results.txt", "a") as file:
+    with open("Results.txt", "w") as file:
 
         # Timestamp for when the test is being executed
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -33,87 +31,56 @@ def testAlgorithms(graph, vehicles, start, end_list, dfs_function, bfs_function)
         file.write(f"End Cities: {', '.join(end_list)}\n")
         file.write("=" * 50 + "\n")
 
-        # 1. Test DFS
-        file.write("Running DFS...\n")
-        start_time = time.time()
+        def run_algorithm(name, function):
+            file.write(f"Running {name}...\n")
+            start_time = time.time()
 
-        dfs_path, dfs_cost_by_vehicle = dfs_function(graph, vehicles, start, end_list)
+            try:
+                result = function(graph, vehicles, start, end_list, supplier_list)
+                print(f"{name} result: {result}")  # Debug print
+                end_time = time.time()
+                elapsed_time = end_time - start_time
 
-        end_time = time.time()
-        dfs_time = end_time - start_time
+                file.write(f"{name} Time: {elapsed_time:.4f} seconds\n")
 
-        # Log DFS results
-        file.write(f"DFS Time: {dfs_time:.4f} seconds\n")
-        if dfs_path:
-            file.write(f"DFS Path: {', '.join([str(p) for p in dfs_path])}\n")
-        else:
-            file.write("DFS Path: No solution found.\n")
+                if isinstance(result, dict):
+                    # Handle BFS, DFS, and Greedy format
+                    first_value = next(iter(result.values()))
+                    if isinstance(first_value, list):  # {goalCityName: [path]}
+                        for goal, path in result.items():
+                            file.write(f"{name} Goal: {goal}, Path: {path}\n")
+                    elif isinstance(first_value, dict):  # {vehicle: {goalCityName: (cost, [path])}}
+                        for vehicle, destinations in result.items():
+                            file.write(f"{name} Vehicle: {vehicle}\n")
+                            for goal, (cost, path) in destinations.items():
+                                file.write(f"  Destination: {goal}, Cost: {cost}, Path: {path}\n")
+                elif isinstance(result, tuple):
+                    file.write(f"{name} Path: {result[0]}\n")
+                    file.write(f"{name} Additional Data: {result[1]}\n")
+                else:
+                    file.write(f"{name} Result: {result}\n")
 
-        if dfs_cost_by_vehicle:
-            file.write(f"DFS Costs by Vehicle: {dfs_cost_by_vehicle}\n")
-        else:
-            file.write("DFS Costs: No cost calculated.\n")
+            except Exception as e:
+                file.write(f"{name} Error: {e}\n")
 
-        file.write("=" * 50 + "\n")
+            file.write("=" * 50 + "\n")
 
-        # 2. Test BFS
-        file.write("Running BFS...\n")
-        start_time = time.time()
+        # Run all algorithms
+        run_algorithm("DFS", lambda g, v, s, e, sl: depthFirstSearch(g, v, s, e, sl))
+        run_algorithm("BFS", lambda g, v, s, e, sl: breadthFirstSearch(g, v, s, e, sl))
+        run_algorithm("Uniform Cost", lambda g, v, s, e, sl: uniformCost(g, v, s, e, sl))
+        run_algorithm("Greedy", lambda g, v, s, e, sl: greedy(g, s, e.copy(), sl.copy()))
+        run_algorithm("A* Search", lambda g, v, s, e, sl: aStarSearch(g, v, s, e, sl))
 
-        bfs_path, bfs_cost_by_vehicle = bfs_function(graph, vehicles, start, end_list)
-
-        end_time = time.time()
-        bfs_time = end_time - start_time
-
-        # Log BFS results
-        file.write(f"BFS Time: {bfs_time:.4f} seconds\n")
-        if bfs_path:
-            file.write(f"BFS Path: {', '.join([str(p) for p in bfs_path])}\n")
-        else:
-            file.write("BFS Path: No solution found.\n")
-
-        if bfs_cost_by_vehicle:
-            file.write(f"BFS Costs by Vehicle: {bfs_cost_by_vehicle}\n")
-        else:
-            file.write("BFS Costs: No cost calculated.\n")
-
-        file.write("=" * 50 + "\n")
         file.write("\n")  # Separate each test with a blank line
 
-
-# Example usage:
-# You should replace `dfs_function` and `bfs_function` with the actual implementations.
-# If you're calling the function within the same file, replace them with `depthFirstSearch` and `breadthFirstSearch`.
-
+# Example usage
 if __name__ == "__main__":
-    # Replace with your actual graph, vehicles, start city, and end cities
-    graph = Graph()# Placeholder - replace with your graph object
+    graph = Graph()
     graph.load()
-    vehicles = []  # Placeholder - replace with your list of vehicles
-    start = "Vila Nova de Cerveira"  # Placeholder - replace with your start city
-    end_list = ["Albufeira", "Faro"]  # Placeholder - replace with your list of end cities
+    vehicles = [Boat(), Drone(), Truck(), Helicopter()]
 
-    # Add your vehicles
-    boat = Boat()
-    vehicles.append(boat)
-    drone = Drone()
-    vehicles.append(drone)
-    truck = Truck()
-    vehicles.append(truck)
-    helicopter = Helicopter()
-    vehicles.append(helicopter)
+    start = "Vila Nova de Cerveira"  # Replace with your start city
+    end_list = ["Albufeira", "Faro"]  # Replace with your end cities
 
-
-    # Call actual DFS and BFS functions
-    def dfs_function(graph, vehicles, start, end_list):
-        # Replace with your actual DFS function
-        return depthFirstSearch(graph, vehicles, start, end_list, [])
-
-
-    def bfs_function(graph, vehicles, start, end_list):
-        # Replace with your actual BFS function
-        return breadthFirstSearch(graph, vehicles, start, end_list)
-
-
-    # Run the tester
-    testAlgorithms(graph, vehicles, start, end_list, dfs_function, bfs_function)
+    testAlgorithms(graph, vehicles, start, end_list)

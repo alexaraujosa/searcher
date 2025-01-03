@@ -1,6 +1,8 @@
 ##########################################
 #   Greedy
 ##########################################
+from RoadConditions import RoadConditions
+
 
 def greedy(self, start, end, supplier_list):
 
@@ -44,9 +46,11 @@ def greedy(self, start, end, supplier_list):
             paths[backN] = reconst_path
 
         # para todos os vizinhos  do nodo corrente
-        for m in self.getNeighbors(n):
+        for (m, road) in self.getNeighborsRoadPair(n):
             # Se o nodo corrente nao esta na open nem na closed list
             # adiciona-lo à open_list e marcar o antecessor
+            if road.roadCondition == RoadConditions.DESTROYED:
+                continue
             if m not in open_list and m not in closed_list:
                 open_list.add(m)
                 parents[m] = n

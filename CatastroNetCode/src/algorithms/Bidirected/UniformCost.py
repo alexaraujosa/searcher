@@ -1,5 +1,8 @@
 import heapq
 
+from RoadConditions import RoadConditions
+
+
 def uniformCost(graph, vehicles, start, end_list, supplier_list):
     """
     Perform Uniform Cost Search on a graph.
@@ -18,7 +21,6 @@ def uniformCost(graph, vehicles, start, end_list, supplier_list):
 
     for vehicle in vehicles:
         pathsByVehicle[vehicle.name] = {}
-        pathToCity = {}
 
         for city_name in end_list:
             found = False
@@ -42,13 +44,15 @@ def uniformCost(graph, vehicles, start, end_list, supplier_list):
                 visited.add(current_city)
 
                 # Explore neighbors
-                for neighbor, road in graph.getNeighborsRoadPair(current_city):
+                for (neighbor, road) in graph.getNeighborsRoadPair(current_city):
+                    if road.roadCondition == RoadConditions.DESTROYED:
+                        continue
                     if neighbor not in visited:
                         cost = graph.getRoadCost(vehicle, current_city, neighbor)
                         heapq.heappush(priority_queue, (current_cost + cost, neighbor, path + [neighbor]))
 
             # If the goal is not reachable
             if not found:
-                pathsByVehicle[vehicle.name][city_name] = (float('inf'), [])
+                    pathsByVehicle[vehicle.name][city_name] = (float('inf'), [])
 
     return pathsByVehicle

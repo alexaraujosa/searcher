@@ -36,7 +36,9 @@ def breadthFirstSearch(graph, vehicles, start, end_list, supplier_list):
                 pathsByGoal[city] = path
 
         # Add neighbors to the queue
-        for neighbor in graph.getNeighbors(current_city):
+        for (neighbor, road) in graph.getNeighborsRoadPair(current_city):
+            if road.roadCondition == RoadConditions.DESTROYED:
+                continue
             if neighbor not in visited:
                 queue.append((neighbor, path + [neighbor]))
 

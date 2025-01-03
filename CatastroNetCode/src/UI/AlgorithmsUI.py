@@ -1,11 +1,16 @@
 import random
 from time import sleep
 
-from algorithms.Dfs import depthFirstSearch
-from algorithms.Bfs import breadthFirstSearch
-from algorithms.UniformCost import uniformCost
-from algorithms.Greedy import greedy
-from algorithms.Astar import aStarSearch
+from algorithms.Bidirected.Dfs import depthFirstSearch
+from algorithms.Bidirected.Bfs import breadthFirstSearch
+from algorithms.Bidirected.UniformCost import uniformCost
+from algorithms.Bidirected.Greedy import greedy
+from algorithms.Bidirected.Astar import aStarSearch
+
+from algorithms.OnePath.DfsSinglePath import depthFirstSearchSinglePath
+from algorithms.OnePath.BfsSinglePath import breadthFirstSearchSinglePath
+
+from src.algorithms.OnePath.GreedySinglePath import greedySinglePath
 
 
 class AlgorithmsUI:
@@ -71,6 +76,22 @@ class AlgorithmsUI:
         print(pathsByGoal)
         return
 
+    def dfsOnePath(self):
+        """
+        Function to start DFS traversal, taking input from the user for the cities.
+        The user provides the starting city and the target cities to visit.
+        """
+        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+
+        print("Calculating path...")
+        path = depthFirstSearchSinglePath(self.graph, self.vehicles, city1_name, end_list, supplier_list)
+
+        print("Image generation...")
+        self.graph.saveRouteAsPNG(path, end_list, supplier_list)
+        print("\n=== Path Costs ===")
+        print(path)
+        return
+
     def bfs(self):
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
@@ -86,6 +107,22 @@ class AlgorithmsUI:
         print(pathsByGoal)
         return
 
+        return
+
+    def bfsOnePath(self):
+        """
+        Function to start DFS traversal, taking input from the user for the cities.
+        The user provides the starting city and the target cities to visit.
+        """
+        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+
+        print("Calculating path...")
+        path = breadthFirstSearchSinglePath(self.graph, self.vehicles, city1_name, end_list, supplier_list)
+
+        print("Image generation...")
+        self.graph.saveRouteAsPNG(path, end_list, supplier_list)
+        print("\n=== Path Costs ===")
+        print(path)
         return
 
     def uniformCost(self):
@@ -128,14 +165,24 @@ class AlgorithmsUI:
         # print(totalCostByVehicle)
         return
 
-    def astar(self):
-        city1_name = input("Which city do you want to start from?: ").strip()
-        if self.graph.getCity(city1_name) is None:
-            print("Invalid city name.")
-            return
-        city2_names = input("Which cities do you want to assist? (Provide as a list, separated by commas): ").strip()
+    def greedyOnePath(self):
+        """
+        Function to start DFS traversal, taking input from the user for the cities.
+        The user provides the starting city and the target cities to visit.
+        """
+        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
-        end_list = [city.strip() for city in city2_names.split(',')]
+        print("Calculating path...")
+        path = greedySinglePath(self.graph, self.vehicles, city1_name, end_list, supplier_list)
+
+        print("Image generation...")
+        self.graph.saveRouteAsPNG(path, end_list, supplier_list)
+        print("\n=== Path Costs ===")
+        print(path)
+        return
+
+    def astar(self):
+        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
         for city in end_list:
             if self.graph.getCity(city) is None:
@@ -145,8 +192,6 @@ class AlgorithmsUI:
 
         paths = uniformCost(self.graph, self.vehicles, city1_name, end_list, supplier_list)
 
-
-        #TODO Neste path vai ter de vir um dic com cada veiculo e cada veiculo com um caminho, e um custo associado a cada caminho
         #Assim temos a solução para cada um deles
         #print("\n=== Path Costs ===")
         for vehicle in self.vehicles:
@@ -181,24 +226,25 @@ class AlgorithmsUI:
         return
 
     def astar(self):
-        city1_name = input("Which city do you want to start from?: ").strip()
-        if self.graph.getCity(city1_name) is None:
-            print("Invalid city name.")
-            return
-        city2_names = input("Which cities do you want to assist? (Provide as a list, separated by commas): ").strip()
+        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
 
-        end_list = [city.strip() for city in city2_names.split(',')]
+        paths = aStarSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
 
-        for city in end_list:
-            if self.graph.getCity(city) is None:
-                print("Invalid city name.")
-                return
+        for vehicle in self.vehicles:
+            pathToPrint = []
+            print(f"=== Vehicle {vehicle.name} ===")
 
-        (path, ret) = aStarSearch(self.graph, self.vehicles, city1_name, end_list)
-        self.graph.saveRouteAsPNG(path, end_list)
-        print("\n=== Path Costs ===")
-        print(path)
-        print(ret)
+            # Iterate through the destinations for the vehicle
+            for destination, (cost, path) in paths[vehicle.name].items():
+                print(f"=== Destination {destination} ===")
+                print(f"Cost: {cost}, Path: {path}")
+
+                # Add the path to the print list in reverse order
+                for city in reversed(path):
+                    pathToPrint.insert(0, city)
+
+            # Save the route for the vehicle
+            self.graph.saveRouteAsPNG(pathToPrint, end_list, supplier_list)
 
 
     def antColony(self):
@@ -229,7 +275,7 @@ class AlgorithmsUI:
                 case "4":
                     self.dynamicGreedy()
                 case "5":
-                    self.astar()
+                    self.dynamicAstar()
                 case "6":
                     self.antColony()
                 case "7":
@@ -484,6 +530,80 @@ class AlgorithmsUI:
         for city, path in full_path.items():
             print(f"{city}: {path}")
 
+    def dynamicAstar(self):
+        city1_name, end_list, supplier_list = self.chooseStartEndSupplierPoints()
+
+        full_path = {}
+        nEvents = 0
+
+        print("\n=== Starting Dynamic Simulation ===")
+
+        # Call uniformCost, which now returns a nested dictionary
+        allPaths = aStarSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
+
+        # Extract paths by goal from the vehicle dictionaries
+        pathsByGoal = {}
+        for vehicle, goals in allPaths.items():
+            for goal, (cost, path) in goals.items():
+                pathsByGoal[goal] = path
+
+        # Create a copy for comparison later
+        original_paths = {goal: path[:] for goal, path in pathsByGoal.items()}
+
+        for city in end_list:
+            if city not in pathsByGoal or not pathsByGoal[city]:
+                print(f"Didn't find any path for {city}.")
+
+        print("\n=== Initial Paths Have Been Calculated ===")
+        for city in end_list:
+            print(f"For {city}: {pathsByGoal.get(city, [])}")
+
+        print("\n=== Starting Traversal ===")
+
+        remaining_goals = end_list[:]
+
+        while remaining_goals:
+            print("\n---------- Voyage Information ----------")
+            for city in remaining_goals[:]:  # Iterate over a copy
+                path = pathsByGoal.get(city, [])
+                if city not in full_path:
+                    full_path[city] = []
+
+                if len(path) > 1:
+                    print(f"The convoy going to {city}, moved from {path[0]} to {path[1]}.")
+                    full_path[city].append(path.pop(0))  # Append current node and move to next
+                elif len(path) == 1:
+                    print(f"The convoy going to {city} arrived!")
+                    full_path[city].append(path.pop(0))  # Append the final node
+                    remaining_goals.remove(city)
+
+            sleep(0.5)
+
+            if random.random() < 0.1 and nEvents < 3:
+                print("Dynamic event triggered.")
+                nEvents += 1
+                self.graph.randomizeRoadConditions()
+                print("Road conditions updated. Recalculating paths...")
+
+                for city in remaining_goals:
+                    current_node = pathsByGoal[city][0] if city in pathsByGoal and pathsByGoal[city] else city1_name
+                    updatedPaths = aStarSearch(self.graph, self.vehicles, current_node, [city], supplier_list)
+
+                    # Update only the relevant city's path from the returned vehicle dictionary
+                    for vehicle, goals in updatedPaths.items():
+                        if city in goals:
+                            pathsByGoal[city] = goals[city][1]  # Update with the new path
+
+        print("\n=== Comparing Choices ===")
+        print("Old Routes:")
+        for city, path in original_paths.items():
+            print(f"{city}: {path}")
+
+        print("New Routes:")
+        for city, path in full_path.items():
+            print(f"{city}: {path}")
+
+
     def run(self):
         while self.running:
             self.displayMenu()
@@ -491,12 +611,15 @@ class AlgorithmsUI:
 
             if choice == "1":
                 self.dfs()
+                #self.dfsOnePath()
             elif choice == "2":
                 self.bfs()
+                #self.bfsOnePath()
             elif choice == "3":
                 self.uniformCost()
             elif choice == "4":
-                self.greddy()
+                #self.greddy()
+                self.greedyOnePath()
             elif choice == "5":
                 self.astar()
             elif choice == "6":

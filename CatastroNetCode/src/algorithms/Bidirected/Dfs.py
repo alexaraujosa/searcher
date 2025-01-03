@@ -37,7 +37,9 @@ def depthFirstSearch(graph, vehicles, start, end_list, supplier_list):
 
             visited.add(current_city)
 
-            for neighbor in graph.getNeighbors(current_city):
+            for (neighbor, road) in graph.getNeighborsRoadPair(current_city):
+                if road.roadCondition == RoadConditions.DESTROYED:
+                    continue
                 if neighbor not in visited:
                     stack.append((neighbor, path + [neighbor]))
 
