@@ -199,57 +199,21 @@ class AlgorithmsUI:
         print(path)
         return
 
-    def astar(self):
-        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
-        if not city1_name or not end_list:
-            return
-
-        for city in end_list:
-            if self.graph.getCity(city) is None:
-                print("Invalid city name.")
-                return
-
-
-        paths = uniformCost(self.graph, self.vehicles, city1_name, end_list, supplier_list)
-
-        #Assim temos a solução para cada um deles
-        #print("\n=== Path Costs ===")
-        for vehicle in self.vehicles:
-            pathToPrint = []
-            print(f"=== Vehicle {vehicle.name} ===")
-
-            # Iterate through the destinations for the vehicle
-            for destination, (cost, path) in paths[vehicle.name].items():
-                print(f"=== Destination {destination} ===")
-                print(f"Cost: {cost}, Path: {path}")
-
-                # Add the path to the print list in reverse order
-                for city in reversed(path):
-                    pathToPrint.insert(0, city)
-
-            # Save the route for the vehicle
-            self.graph.saveRouteAsPNG(pathToPrint, end_list, supplier_list)
-
-        return
-
-    # def greddy(self):
-    #     (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
-        
-    #     paths = greedy(self.graph, city1_name, end_list, supplier_list)
-    #     finalPath = []
-    #     for path in paths.values():
-    #         finalPath = finalPath + path
-    #     self.graph.saveRouteAsPNG(finalPath, end_list, supplier_list)
-    #     print("\n=== Path Costs ===")
-    #     print(finalPath)
-    #     # print(totalCostByVehicle)
-    #     return
-
     # def astar(self):
     #     (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+    #     if not city1_name or not end_list:
+    #         return
 
-    #     paths = aStarSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
+    #     for city in end_list:
+    #         if self.graph.getCity(city) is None:
+    #             print("Invalid city name.")
+    #             return
 
+
+    #     paths = uniformCost(self.graph, self.vehicles, city1_name, end_list, supplier_list)
+
+    #     #Assim temos a solução para cada um deles
+    #     #print("\n=== Path Costs ===")
     #     for vehicle in self.vehicles:
     #         pathToPrint = []
     #         print(f"=== Vehicle {vehicle.name} ===")
@@ -265,6 +229,42 @@ class AlgorithmsUI:
 
     #         # Save the route for the vehicle
     #         self.graph.saveRouteAsPNG(pathToPrint, end_list, supplier_list)
+
+    #     return
+
+    # def greddy(self):
+    #     (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+        
+    #     paths = greedy(self.graph, city1_name, end_list, supplier_list)
+    #     finalPath = []
+    #     for path in paths.values():
+    #         finalPath = finalPath + path
+    #     self.graph.saveRouteAsPNG(finalPath, end_list, supplier_list)
+    #     print("\n=== Path Costs ===")
+    #     print(finalPath)
+    #     # print(totalCostByVehicle)
+    #     return
+
+    def astar(self):
+        (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+
+        paths = aStarSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
+
+        for vehicle in self.vehicles:
+            pathToPrint = []
+            print(f"=== Vehicle {vehicle.name} ===")
+
+            # Iterate through the destinations for the vehicle
+            for destination, (cost, path) in paths[vehicle.name].items():
+                print(f"=== Destination {destination} ===")
+                print(f"Cost: {cost}, Path: {path}")
+
+                # Add the path to the print list in reverse order
+                for city in reversed(path):
+                    pathToPrint.insert(0, city)
+
+            # Save the route for the vehicle
+            self.graph.saveRouteAsPNG(pathToPrint, end_list, supplier_list)
 
 
     def antColony(self):
