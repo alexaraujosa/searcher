@@ -34,7 +34,7 @@ class AlgorithmsUI:
         city1_name = input("Which city do you want to start from?: ").strip()
         if self.graph.getCity(city1_name) is None:
             print("Invalid city name.")
-            return ("", [])
+            return ("", [], [])
 
         city2_names = input("Which cities do you want to assist? (Provide as a list, separated by commas): ").strip()
 
@@ -63,6 +63,8 @@ class AlgorithmsUI:
         The user provides the starting city and the target cities to visit.
         """
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+        if not city1_name or not end_list:
+            return
 
         pathsByGoal = depthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
 
@@ -82,6 +84,8 @@ class AlgorithmsUI:
         The user provides the starting city and the target cities to visit.
         """
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+        if not city1_name or not end_list:
+            return
 
         print("Calculating path...")
         path = depthFirstSearchSinglePath(self.graph, self.vehicles, city1_name, end_list, supplier_list)
@@ -94,6 +98,8 @@ class AlgorithmsUI:
 
     def bfs(self):
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+        if not city1_name or not end_list:
+            return
 
         pathsByGoal = breadthFirstSearch(self.graph, self.vehicles, city1_name, end_list, supplier_list)
 
@@ -115,6 +121,8 @@ class AlgorithmsUI:
         The user provides the starting city and the target cities to visit.
         """
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+        if not city1_name or not end_list:
+            return
 
         print("Calculating path...")
         path = breadthFirstSearchSinglePath(self.graph, self.vehicles, city1_name, end_list, supplier_list)
@@ -127,6 +135,8 @@ class AlgorithmsUI:
 
     def uniformCost(self):
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+        if not city1_name or not end_list:
+            return
 
         paths = uniformCost(self.graph, self.vehicles, city1_name, end_list, supplier_list)
 
@@ -154,6 +164,8 @@ class AlgorithmsUI:
 
     def greddy(self):
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+        if not city1_name or not end_list:
+            return
         backEndList = end_list.copy()
         
         paths = greedy(self.graph, city1_name, end_list, supplier_list)
@@ -175,6 +187,8 @@ class AlgorithmsUI:
         The user provides the starting city and the target cities to visit.
         """
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+        if not city1_name or not end_list:
+            return
 
         print("Calculating path...")
         path = greedySinglePath(self.graph, self.vehicles, city1_name, end_list, supplier_list)
@@ -187,6 +201,8 @@ class AlgorithmsUI:
 
     def astar(self):
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+        if not city1_name or not end_list:
+            return
 
         for city in end_list:
             if self.graph.getCity(city) is None:
@@ -289,6 +305,8 @@ class AlgorithmsUI:
 
     def dynamicDFS(self):
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+        if not city1_name or not end_list:
+            return
 
         full_path = {city: [] for city in end_list}
         nEvents = 0
@@ -347,6 +365,8 @@ class AlgorithmsUI:
 
     def dynamicBFS(self):
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+        if not city1_name or not end_list:
+            return
 
         full_path = {city: [] for city in end_list}
         nEvents = 0
@@ -405,6 +425,8 @@ class AlgorithmsUI:
 
     def dynamicUniformCost(self):
         city1_name, end_list, supplier_list = self.chooseStartEndSupplierPoints()
+        if not city1_name or not end_list:
+            return
 
         full_path = {}
         nEvents = 0
@@ -478,6 +500,8 @@ class AlgorithmsUI:
 
     def dynamicGreedy(self):
         (city1_name, end_list, supplier_list) = self.chooseStartEndSupplierPoints()
+        if not city1_name or not end_list:
+            return
 
         full_path = {city: [] for city in end_list}
         nEvents = 0
@@ -536,6 +560,8 @@ class AlgorithmsUI:
 
     def dynamicAstar(self):
         city1_name, end_list, supplier_list = self.chooseStartEndSupplierPoints()
+        if not city1_name or not end_list:
+            return
 
         full_path = {}
         nEvents = 0
